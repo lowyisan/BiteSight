@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import './NavBar.css';
 import { 
   FaHome, 
@@ -19,10 +19,13 @@ const NavBar = () => {
       </div>
       <ul className="sidebar-menu">
         <li>
-          <Link to="/">
+          <NavLink 
+            to="/" 
+            className={({ isActive }) => (isActive ? 'active-link' : undefined)}
+          >
             <FaHome className="sidebar-icon" />
             <span>Overview</span>
-          </Link>
+          </NavLink>
         </li>
         <li>
           <a href="#/">
@@ -31,10 +34,13 @@ const NavBar = () => {
           </a>
         </li>
         <li>
-          <Link to="/analysis">
+          <NavLink 
+            to="/analysis"
+            className={({ isActive }) => (isActive ? 'active-link' : undefined)}
+          >
             <FaClock className="sidebar-icon" />
             <span>Time-Series Analysis</span>
-          </Link>
+          </NavLink>
         </li>
         <li>
           <a href="#/">

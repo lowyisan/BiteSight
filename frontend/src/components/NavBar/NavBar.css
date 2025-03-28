@@ -12,14 +12,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px; /* spacing below the logo */
+  margin-bottom: 20px;
 }
 
 .sidebar-logo img {
   width: 200px;
-  height: auto;   /* keeps aspect ratio */
+  height: auto;
   object-fit: contain;
-  /* margin: 0 auto; */
 }
 
 .sidebar-menu {
@@ -53,4 +52,11 @@
   margin-right: 10px;
   font-size: 18px;
   color: #8f95b2;
+}
+
+/* Highlight the active link */
+.active-link {
+  background-color: #f4f6ff;
+  color: #333;
+  border-left: 4px solid #3498db;
 }
