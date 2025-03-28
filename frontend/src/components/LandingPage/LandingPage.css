@@ -1,0 +1,41 @@
+.landing-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .landing-container h1 {
+    margin-bottom: 30px;
+    font-weight: normal;
+  }
+  
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .kpi-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 20px;
+    min-width: 200px;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .kpi-card h3 {
+    margin: 0 0 10px;
+    font-weight: 500;
+    font-size: 18px;
+  }
+  
+  .kpi-card p {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+  
