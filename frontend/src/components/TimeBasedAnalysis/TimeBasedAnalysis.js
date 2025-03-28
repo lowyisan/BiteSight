@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import BusinessCard from '../BusinessCard/BusinessCard';
 import AnalysisGraph from './AnalysisGraph';
+import SpikeDipAnalysis from '../SpikeDipAnalysis/SpikeDipAnalysis';
 import './TimeBasedAnalysis.css';
 
 const TimeBasedAnalysis = () => {
   const [businesses, setBusinesses] = useState([]);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [spikeDipData, setSpikeDipData] = useState([]);
 
   // For text search, state dropdown, and city dropdown
   const [searchText, setSearchText] = useState('');
@@ -16,6 +18,7 @@ const TimeBasedAnalysis = () => {
   const [graphData, setGraphData] = useState([]);
   const [viewType, setViewType] = useState('monthly');
   const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(''); // For monthly view
 
   // Load business list from monthly trends JSON
   useEffect(() => {
@@ -37,10 +40,24 @@ const TimeBasedAnalysis = () => {
       });
   }, []);
 
-  // Select a business and load its chart data
+  // Load spike/dip topic modeling data
+  useEffect(() => {
+    fetch('/spike_dip_topic_modeling.json')
+      .then((res) => res.json())
+      .then((data) => setSpikeDipData(data))
+      .catch((err) => {
+        console.error("Error fetching spike/dip topic modeling data:", err);
+        setSpikeDipData([]);
+      });
+  }, []);
+
+  // Select a business and reset year & month, then load its chart data
   const handleBusinessSelect = (business) => {
     setSelectedBusiness(business);
-    loadGraphData(business, viewType, selectedYear);
+    // Reset year and month when a new card is clicked.
+    setSelectedYear('');
+    setSelectedMonth('');
+    loadGraphData(business, viewType, '');
   };
 
   // Load chart data from either monthly or quarterly JSON
@@ -61,17 +78,24 @@ const TimeBasedAnalysis = () => {
       });
   };
 
-  // Reload chart when view type or year changes (and a business is selected)
+  // Reload chart when view type or year changes (if a business is selected)
   useEffect(() => {
     if (selectedBusiness) {
       loadGraphData(selectedBusiness, viewType, selectedYear);
     }
   }, [viewType, selectedYear]);
 
-  // Gather unique states from the businesses
-  const uniqueStates = Array.from(new Set(businesses.map(b => b.state).filter(Boolean))).sort();
+  // Callback for clicking a data point on the chart
+  const handleDataPointClick = (label) => {
+    // Label format "YYYY-MM" for monthly view
+    const [year, month] = label.split("-");
+    setSelectedYear(year);
+    setSelectedMonth(month);
+  };
 
-  // Gather unique cities based on the selected state
+  // Get unique states from the businesses
+  const uniqueStates = Array.from(new Set(businesses.map(b => b.state).filter(Boolean))).sort();
+  // Get unique cities based on the selected state
   const uniqueCities = selectedState
     ? Array.from(
         new Set(
@@ -83,7 +107,7 @@ const TimeBasedAnalysis = () => {
       ).sort()
     : [];
 
-  // Filter businesses based on search text, selected state, and selected city
+  // Filter businesses based on search text, state, and city
   const filteredBusinesses = businesses.filter((b) => {
     const matchesSearch = b.business_name.toLowerCase().includes(searchText.toLowerCase());
     const matchesState = selectedState ? b.state === selectedState : true;
@@ -102,14 +126,13 @@ const TimeBasedAnalysis = () => {
           onChange={(e) => setSearchText(e.target.value)}
           className="analysis-filter"
         />
-
         <div className="dropdown-group">
           <label>State:</label>
           <select
             value={selectedState}
             onChange={(e) => {
               setSelectedState(e.target.value);
-              setSelectedCity(''); // reset city when state changes
+              setSelectedCity('');
             }}
           >
             <option value="">All States</option>
@@ -120,7 +143,6 @@ const TimeBasedAnalysis = () => {
             ))}
           </select>
         </div>
-
         {selectedState && (
           <div className="dropdown-group">
             <label>City:</label>
@@ -137,7 +159,6 @@ const TimeBasedAnalysis = () => {
             </select>
           </div>
         )}
-
         {filteredBusinesses.map((business) => (
           <BusinessCard
             key={business.business_ID}
@@ -147,7 +168,7 @@ const TimeBasedAnalysis = () => {
         ))}
       </div>
 
-      {/* Right Panel: Chart Area */}
+      {/* Right Panel: Chart Area and Spike/Dip Word Cloud */}
       <div className="analysis-right-panel">
         {selectedBusiness ? (
           <div className="analysis-card">
@@ -157,7 +178,11 @@ const TimeBasedAnalysis = () => {
                 View Type:
                 <select
                   value={viewType}
-                  onChange={(e) => setViewType(e.target.value)}
+                  onChange={(e) => {
+                    setViewType(e.target.value);
+                    // Reset month when switching view types.
+                    setSelectedMonth('');
+                  }}
                 >
                   <option value="monthly">Monthly</option>
                   <option value="quarterly">Quarterly</option>
@@ -169,15 +194,26 @@ const TimeBasedAnalysis = () => {
                   type="number"
                   placeholder="e.g., 2020"
                   value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedYear(e.target.value);
+                    setSelectedMonth('');
+                  }}
                 />
               </label>
             </div>
-            <AnalysisGraph data={graphData} viewType={viewType} />
+            <AnalysisGraph data={graphData} viewType={viewType} onDataPointClick={handleDataPointClick} />
+            {viewType === 'monthly' && selectedYear && selectedMonth && (
+              <SpikeDipAnalysis
+                business={selectedBusiness}
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                spikeDipData={spikeDipData}
+              />
+            )}
           </div>
         ) : (
           <div className="analysis-card">
-            <p>Please select a business to view its rating trends.</p>
+            <p>Please select a business to view its rating trends and spike/dip analysis.</p>
           </div>
         )}
       </div>

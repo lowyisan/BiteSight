@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -14,12 +14,13 @@ import './AnalysisGraph.css';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const AnalysisGraph = ({ data, viewType }) => {
+const AnalysisGraph = ({ data, viewType, onDataPointClick }) => {
+  const chartRef = useRef(null);
+
   if (!data || data.length === 0) {
-    return <p>No data available for the selected business and year.</p>;
+    return <p>No data available for the selected business and time period.</p>;
   }
 
-  // Build chart data with explicit handling of missing data
   let labels = [];
   let ratings = [];
   let hasData = false;
@@ -31,7 +32,6 @@ const AnalysisGraph = ({ data, viewType }) => {
         if (a.year === b.year) return a.month - b.month;
         return a.year - b.year;
       });
-
     hasData = sorted.length > 0;
     labels = sorted.map(item => `${item.year}-${String(item.month).padStart(2, '0')}`);
     ratings = sorted.map(item => item.monthly_avg_rating);
@@ -42,7 +42,6 @@ const AnalysisGraph = ({ data, viewType }) => {
         if (a.year === b.year) return a.quarter - b.quarter;
         return a.year - b.year;
       });
-
     hasData = sorted.length > 0;
     labels = sorted.map(item => `${item.year}-Q${item.quarter}`);
     ratings = sorted.map(item => item.avg_quarterly_rating);
@@ -70,6 +69,17 @@ const AnalysisGraph = ({ data, viewType }) => {
 
   const chartOptions = {
     responsive: true,
+    onClick: (event, elements) => {
+      if (elements.length > 0) {
+        const firstElement = elements[0];
+        const index = firstElement.index;
+        const label = chartData.labels[index];
+        // Call the passed callback with the clicked label
+        if (onDataPointClick) {
+          onDataPointClick(label);
+        }
+      }
+    },
     plugins: {
       legend: {
         display: true,
@@ -104,7 +114,7 @@ const AnalysisGraph = ({ data, viewType }) => {
 
   return (
     <div className="chart-container">
-      <Line data={chartData} options={chartOptions} />
+      <Line data={chartData} options={chartOptions} ref={chartRef} />
       <p className="chart-note">
         * Gaps in the graph represent periods with no review data
       </p>
