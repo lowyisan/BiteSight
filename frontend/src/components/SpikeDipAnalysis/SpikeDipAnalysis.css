@@ -13,3 +13,12 @@
   margin-top: 10px;
   overflow: hidden; /* clips anything beyond the container bounds */
 }
+
+@media (max-width: 768px) {
+  .spike-dip-analysis {
+    padding: 10px;
+  }
+  .custom-word-cloud {
+    padding: 10px;
+  }
+}

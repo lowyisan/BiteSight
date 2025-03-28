@@ -1,36 +1,60 @@
 .analysis-container {
   display: flex;
   gap: 20px;
-  /* The right panel will fill the rest if set to flex: 1 */
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box; /* ensure padding doesn't break layout */
+  align-items: flex-start;
 }
 
 .analysis-left-panel {
-  flex: 0 0 250px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  padding: 20px;
+  flex: 0 0 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
   max-height: calc(100vh - 60px);
   overflow-y: auto;
+  position: relative; 
+  padding: 0;
 }
 
+.filters-section {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  padding: 20px;
+  z-index: 10;
+  border-bottom: 1px solid #eee;
+}
 
+/* The scrollable business list below the filters */
+.business-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center each card */
+}
+
+/* The search input */
 .analysis-filter {
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
   outline: none;
+  font-size: 14px;
   box-sizing: border-box;
 }
 
-
+/* Grouping for dropdown labels + selects */
 .dropdown-group {
+  width: 100%;
   margin-bottom: 15px;
 }
 
+/* Label styling for State/City */
 .dropdown-group label {
   display: block;
   font-weight: 500;
@@ -38,42 +62,69 @@
   color: #555;
 }
 
+/* Select styling for State/City */
 .dropdown-group select {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
   outline: none;
+  font-size: 14px;
+  background-color: #fff;
+  box-sizing: border-box;
 }
 
-/* Right Panel */
-.analysis-right-panel {
-  width: 75%;
-  max-height: calc(100vh - 60px);
-  overflow-y: auto;
+/* The business card container in the left panel */
+.business-card {
+  width: 100%;
+  max-width: 260px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
-/* Card holding the chart & controls */
-.analysis-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 20px;
+.business-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.analysis-card h2 {
-  margin-top: 0;
+.business-card h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
   font-weight: 600;
   color: #333;
 }
 
+.business-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Right Panel: chart + spike/dip analysis */
+.analysis-right-panel {
+  flex: 1;
+}
+
+.analysis-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 .analysis-controls {
   display: flex;
+  flex-wrap: wrap; /* allow wrapping on smaller screens */
   align-items: center;
   gap: 20px;
   margin-bottom: 20px;
-  margin-top: 10px;
 }
 
 .analysis-controls label {
@@ -84,31 +135,35 @@
 }
 
 .analysis-controls select,
-.analysis-controls input {
+.analysis-controls input[type="number"] {
   margin-left: 5px;
-  padding: 5px;
+  padding: 8px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
   outline: none;
 }
 
-.dropdown-group {
-  margin-bottom: 15px;
-}
-
-.dropdown-group label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #555;
-}
-
-.dropdown-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
+@media (max-width: 768px) {
+  .analysis-container {
+    flex-direction: column;
+  }
+  .analysis-left-panel {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .filters-section {
+    border-bottom: none;
+  }
+  .business-list {
+    padding: 10px;
+    align-items: center; /* keep center alignment for mobile as well */
+  }
+  .analysis-right-panel {
+    width: 100%;
+  }
+  .analysis-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
