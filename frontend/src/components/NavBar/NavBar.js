@@ -28,7 +28,7 @@ const NavBar = () => {
           </NavLink>
         </li>
         <li>
-          <a href="#/">
+          <a href="/sentiment">
             <FaRegSmileBeam className="sidebar-icon" />
             <span>Sentiment-Based Analysis</span>
           </a>

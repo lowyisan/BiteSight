@@ -4,6 +4,7 @@ import NavBar from './components/NavBar/NavBar';
 import LandingPage from './components/LandingPage/LandingPage';
 import TimeBasedAnalysis from './components/TimeBasedAnalysis/TimeBasedAnalysis';
 import './App.css';
+import SentimentAnalysis from './components/SentimentAnalysis/SentimentAnalysis';
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/analysis" element={<TimeBasedAnalysis />} />
+            <Route path="/sentiment" element={<SentimentAnalysis />} />
           </Routes>
         </div>
       </div>
