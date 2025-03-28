@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import BusinessCard from '../BusinessCard/BusinessCard';
 import CityAnalysisGraph from './CityAnalysisGraph';
+import CityBasedInsights from './CityBasedInsights';
 import './CityBasedAnalysis.css';
 
 const CityBasedAnalysis = () => {
   const [businesses, setBusinesses] = useState([]);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchText, setSearchText] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [analysisType, setAnalysisType] = useState('None');
 
   useEffect(() => {
     fetch('/city_enriched_business.json')
-      .then((res) => res.json())
-      .then((data) => setBusinesses(data));
+      .then(res => res.json())
+      .then(setBusinesses);
   }, []);
 
   const foodKeywords = [
@@ -26,7 +28,6 @@ const CityBasedAnalysis = () => {
   ];
 
   const uniqueStates = Array.from(new Set(businesses.map(b => b.state))).sort();
-
   const uniqueCities = selectedState
     ? Array.from(new Set(businesses.filter(b => b.state === selectedState).map(b => b.city)))
     : [];
@@ -39,7 +40,7 @@ const CityBasedAnalysis = () => {
     )
   ).sort();
 
-  const filteredBusinesses = businesses.filter((b) => {
+  const filteredBusinesses = businesses.filter(b => {
     const nameMatch = b.business_name.toLowerCase().includes(searchText.toLowerCase());
     const stateMatch = selectedState ? b.state === selectedState : true;
     const cityMatch = selectedCity ? b.city === selectedCity : true;
@@ -49,9 +50,7 @@ const CityBasedAnalysis = () => {
     return nameMatch && stateMatch && cityMatch && categoryMatch;
   });
 
-  const handleBusinessSelect = (b) => {
-    setSelectedBusiness(b);
-  };
+  const handleBusinessSelect = (b) => setSelectedBusiness(b);
 
   return (
     <div className="analysis-container">
@@ -64,6 +63,20 @@ const CityBasedAnalysis = () => {
             onChange={(e) => setSearchText(e.target.value)}
             className="analysis-filter"
           />
+          
+          <div className="dropdown-group">
+            <label>Analysis Type:</label>
+            <select value={analysisType} onChange={(e) => {
+                setAnalysisType(e.target.value);
+                setSelectedBusiness(null); // reset selected business when switching to insights
+            }}>
+                <option value="None">None</option>
+                <option value="Top Categories">Top Categories</option>
+                <option value="Average Business Hours">Average Business Hours</option>
+                <option value="Hotspot Cities">Hotspot Cities</option>
+            </select>
+          </div>
+
           <div className="dropdown-group">
             <label>Category:</label>
             <select
@@ -74,6 +87,7 @@ const CityBasedAnalysis = () => {
               {uniqueCategories.map((c, i) => <option key={i} value={c}>{c}</option>)}
             </select>
           </div>
+
           <div className="dropdown-group">
             <label>State:</label>
             <select
@@ -87,6 +101,7 @@ const CityBasedAnalysis = () => {
               {uniqueStates.map((s, i) => <option key={i} value={s}>{s}</option>)}
             </select>
           </div>
+
           {selectedState && (
             <div className="dropdown-group">
               <label>City:</label>
@@ -101,26 +116,39 @@ const CityBasedAnalysis = () => {
           )}
         </div>
 
-        <div className="business-list">
-          {filteredBusinesses.map((b) => (
-            <BusinessCard
-              key={b.business_id}
-              business={b}
-              onSelect={handleBusinessSelect}
-            />
-          ))}
-        </div>
+        {analysisType === 'None' && (
+          <div className="business-list">
+            {filteredBusinesses.map(b => (
+              <BusinessCard
+                key={b.business_id}
+                business={b}
+                onSelect={handleBusinessSelect}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="analysis-right-panel">
-        {selectedBusiness ? (
-          <div className="analysis-card">
-            <h2>{selectedBusiness.business_name}</h2>
-            <CityAnalysisGraph business={selectedBusiness} />
-          </div>
+        {analysisType === 'None' ? (
+          selectedBusiness ? (
+            <div className="analysis-card">
+              <h2>{selectedBusiness.business_name}</h2>
+              <CityAnalysisGraph business={selectedBusiness} />
+            </div>
+          ) : (
+            <div className="analysis-card">
+              <p>Please select a business to view its review breakdown and details.</p>
+            </div>
+          )
         ) : (
-          <div className="analysis-card">
-            <p>Please select a business to view its review breakdown and details.</p>
+            <div className="analysis-card">
+            <CityBasedInsights
+                analysisType={analysisType}
+                selectedCategory={selectedCategory}
+                selectedState={selectedState}
+                selectedCity={selectedCity}
+            />
           </div>
         )}
       </div>
