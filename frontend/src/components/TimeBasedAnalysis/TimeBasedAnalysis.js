@@ -119,53 +119,60 @@ const TimeBasedAnalysis = () => {
     <div className="analysis-container">
       {/* Left Panel: Filters + Business List */}
       <div className="analysis-left-panel">
-        <input
-          type="text"
-          placeholder="Search by business name"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="analysis-filter"
-        />
-        <div className="dropdown-group">
-          <label>State:</label>
-          <select
-            value={selectedState}
-            onChange={(e) => {
-              setSelectedState(e.target.value);
-              setSelectedCity('');
-            }}
-          >
-            <option value="">All States</option>
-            {uniqueStates.map((state, idx) => (
-              <option key={idx} value={state}>
-                {state}
-              </option>
-            ))}
-          </select>
-        </div>
-        {selectedState && (
+        {/* Sticky filters at the top */}
+        <div className="filters-section">
+          <input
+            type="text"
+            placeholder="Search by business name"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="analysis-filter"
+          />
           <div className="dropdown-group">
-            <label>City:</label>
+            <label>State:</label>
             <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
+              value={selectedState}
+              onChange={(e) => {
+                setSelectedState(e.target.value);
+                setSelectedCity('');
+              }}
             >
-              <option value="">All Cities</option>
-              {uniqueCities.map((city, idx) => (
-                <option key={idx} value={city}>
-                  {city}
+              <option value="">All States</option>
+              {uniqueStates.map((state, idx) => (
+                <option key={idx} value={state}>
+                  {state}
                 </option>
               ))}
             </select>
           </div>
-        )}
-        {filteredBusinesses.map((business) => (
-          <BusinessCard
-            key={business.business_ID}
-            business={business}
-            onSelect={handleBusinessSelect}
-          />
-        ))}
+          {selectedState && (
+            <div className="dropdown-group">
+              <label>City:</label>
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+              >
+                <option value="">All Cities</option>
+                {uniqueCities.map((city, idx) => (
+                  <option key={idx} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Scrollable business list below the filters */}
+        <div className="business-list">
+          {filteredBusinesses.map((business) => (
+            <BusinessCard
+              key={business.business_ID}
+              business={business}
+              onSelect={handleBusinessSelect}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Right Panel: Chart Area and Spike/Dip Word Cloud */}

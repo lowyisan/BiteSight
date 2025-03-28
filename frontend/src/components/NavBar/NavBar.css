@@ -54,9 +54,29 @@
   color: #8f95b2;
 }
 
-/* Highlight the active link */
+/* Highlight the active NavLink */
 .active-link {
   background-color: #f4f6ff;
   color: #333;
   border-left: 4px solid #3498db;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px; /* collapse sidebar */
+    padding-top: 20px;
+  }
+  .sidebar-logo img {
+    width: 40px; /* smaller logo */
+  }
+  .sidebar-menu a {
+    justify-content: center; /* center icon */
+    padding: 10px;
+  }
+  .sidebar-menu a span {
+    display: none; /* hide text labels */
+  }
+  .sidebar-icon {
+    margin-right: 0;
+  }
 }
