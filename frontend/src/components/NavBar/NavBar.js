@@ -4,16 +4,18 @@ import './NavBar.css';
 import { 
   FaHome, 
   FaChartLine, 
-  FaShoppingCart, 
-  FaCog, 
-  FaSignOutAlt 
+  FaCity, 
+  FaClock, 
+  FaRegSmileBeam,
+  FaMapMarkedAlt
 } from 'react-icons/fa';
+import logo from '../../assets/images/logo.png'
 
 const NavBar = () => {
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
-        Big Data
+        <img src={logo} alt="Logo" />
       </div>
       <ul className="sidebar-menu">
         <li>
@@ -23,27 +25,27 @@ const NavBar = () => {
           </Link>
         </li>
         <li>
+          <a href="#/">
+            <FaRegSmileBeam className="sidebar-icon" />
+            <span>Sentiment-Based Analysis</span>
+          </a>
+        </li>
+        <li>
           <Link to="/analysis">
-            <FaChartLine className="sidebar-icon" />
+            <FaClock className="sidebar-icon" />
             <span>Time-Series Analysis</span>
           </Link>
         </li>
         <li>
           <a href="#/">
-            <FaShoppingCart className="sidebar-icon" />
+            <FaMapMarkedAlt className="sidebar-icon" />
+            <span>Geospatial Analysis</span>
+          </a>
+        </li>
+        <li>
+          <a href="#/">
+            <FaCity className="sidebar-icon" />
             <span>City-Based Analysis</span>
-          </a>
-        </li>
-        <li>
-          <a href="#/">
-            <FaCog className="sidebar-icon" />
-            <span>Settings</span>
-          </a>
-        </li>
-        <li>
-          <a href="#/">
-            <FaSignOutAlt className="sidebar-icon" />
-            <span>Logout</span>
           </a>
         </li>
       </ul>

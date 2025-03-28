@@ -62,23 +62,10 @@ const TimeBasedAnalysis = () => {
     }
   }, [viewType, selectedYear]);
 
-  // Compute unique states from the loaded businesses
-  const uniqueStates = Array.from(
-    new Set(businesses.map(b => b.state).filter(Boolean))
-  ).sort();
-
-  // Compute unique cities based on the selected state
-  const uniqueCities = selectedState
-    ? Array.from(
-        new Set(businesses.filter(b => b.state === selectedState).map(b => b.city).filter(Boolean))
-      ).sort()
-    : [];
 
   // Filter businesses based on search text, selected state, and selected city
   const filteredBusinesses = businesses.filter((b) =>
-    b.business_name.toLowerCase().includes(searchText.toLowerCase()) &&
-    (selectedState ? b.state === selectedState : true) &&
-    (selectedCity ? b.city === selectedCity : true)
+    b.business_name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -91,43 +78,7 @@ const TimeBasedAnalysis = () => {
           onChange={(e) => setSearchText(e.target.value)}
           className="analysis-filter"
         />
-        <div className="dropdown-group">
-          <label>
-            State:
-            <select
-              value={selectedState}
-              onChange={(e) => {
-                setSelectedState(e.target.value);
-                setSelectedCity(''); // reset city when state changes
-              }}
-            >
-              <option value="">All States</option>
-              {uniqueStates.map((state, index) => (
-                <option key={index} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {selectedState && (
-          <div className="dropdown-group">
-            <label>
-              City:
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-              >
-                <option value="">All Cities</option>
-                {uniqueCities.map((city, index) => (
-                  <option key={index} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        )}
+        
         {filteredBusinesses.map((business) => (
           <BusinessCard
             key={business.business_ID}

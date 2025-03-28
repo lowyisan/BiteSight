@@ -1,47 +1,56 @@
 .sidebar {
-    width: 250px;
-    background-color: #1e1e2f;
-    height: 100vh;
-    padding: 20px 0;
-    position: fixed;
-    left: 0;
-    top: 0;
-  }
-  
-  .sidebar-logo {
-    font-size: 32px;
-    font-weight: bold;
-    color: #ffcc00;
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  .sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .sidebar-menu li {
-    margin: 20px 0;
-  }
-  
-  .sidebar-menu a {
-    color: #fff;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    padding: 10px 20px;
-    transition: background-color 0.2s ease;
-  }
-  
-  .sidebar-menu a:hover {
-    background-color: #2b2b44;
-    border-left: 4px solid #ffcc00;
-  }
-  
-  .sidebar-icon {
-    margin-right: 10px;
-    font-size: 18px;
-  }
-  
+  width: 250px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  padding-top: 30px;
+  position: relative;
+}
+
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px; /* spacing below the logo */
+}
+
+.sidebar-logo img {
+  width: 200px;
+  height: auto;   /* keeps aspect ratio */
+  object-fit: contain;
+  /* margin: 0 auto; */
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin: 15px 0;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  color: #555;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 10px 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 6px 0 0 6px;
+}
+
+.sidebar-menu a:hover {
+  background-color: #f4f6ff;
+  color: #333;
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  font-size: 18px;
+  color: #8f95b2;
+}
