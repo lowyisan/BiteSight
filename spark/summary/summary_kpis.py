@@ -44,20 +44,38 @@ def calculate_summary_kpis(spark, file_path, output_dir):
     total_businesses = df.select("business_ID").distinct().count()
     total_reviews = df.count()
     avg_rating = df.select(avg("star")).first()[0]
+
+    # Also count number of distinct states and cities
+    num_states = df.select("state").distinct().count()
+    num_cities = df.select("city").distinct().count()
     
     # Create a pandas DataFrame for easy CSV export
     summary_df = pd.DataFrame({
-        'metric': ['total_businesses', 'total_reviews', 'overall_avg_rating'],
+        'metric': [
+            'total_businesses', 
+            'total_reviews', 
+            'num_states', 
+            'num_cities', 
+            'overall_avg_rating'
+        ],
         'value': [
             f"{total_businesses:,}", 
-            f"{total_reviews:,}", 
+            f"{total_reviews:,}",
+            f"{num_states:,}",
+            f"{num_cities:,}",
             round(avg_rating, 2)
         ]
     })
     
-    # Export to CSV
+    # Convert to CSV string
+    csv_str = summary_df.to_csv(index=False)
+    # Strip trailing newline so the file doesn't end with "\n"
+    csv_str = csv_str.rstrip('\n')
+    
+    # Write CSV string to file without a trailing newline
     output_path = os.path.join(output_dir, 'yelp_summary_kpis.csv')
-    summary_df.to_csv(output_path, index=False)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(csv_str)
     
     print(f"Summary KPIs exported to: {output_path}")
     
@@ -70,7 +88,6 @@ def main():
         .getOrCreate()
     
     try:
-        # Adjust these paths as needed
         input_file = "../dataset/small-r-00000"
         output_directory = "output"
         

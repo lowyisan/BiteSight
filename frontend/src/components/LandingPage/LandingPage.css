@@ -1,59 +1,39 @@
 .landing-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .top-bar {
+  margin-bottom: 30px;
+}
+
+.kpi-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center; /* center the cards horizontally */
+  gap: 20px;              /* spacing between cards */
+  margin-bottom: 30px;
 }
 
-
-.landing-container h1 {
-  font-weight: 600;
-  font-size: 24px;
-  margin: 0;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 10px;
-  margin: auto;
-}
-
-/* KPI cards with pastel backgrounds or white */
 .kpi-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   padding: 20px;
-  flex: 1;
-  min-width: 200px;
-  max-width: 220px;
-  text-align: left;
-  transition: transform 0.2s ease;
-}
-
-.kpi-card:hover {
-  transform: translateY(-3px);
+  min-width: 180px;   /* consistent card width */
+  text-align: center; /* center text inside the card */
 }
 
 .kpi-card h3 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-weight: 500;
-  font-size: 16px;
-  color: #777;
+  font-size: 18px;
+  color: #666;
 }
 
 .kpi-card p {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: bold;
   margin: 0;
   color: #333;
 }

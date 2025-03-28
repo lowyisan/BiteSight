@@ -1,4 +1,6 @@
 metric,value
 total_businesses,"1,755"
 total_reviews,"50,000"
+num_states,14
+num_cities,309
 overall_avg_rating,3.84
