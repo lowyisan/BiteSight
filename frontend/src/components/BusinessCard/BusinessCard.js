@@ -5,7 +5,7 @@ const BusinessCard = ({ business, onSelect }) => {
   return (
     <div className="business-card" onClick={() => onSelect(business)}>
       <h3>{business.business_name}</h3>
-      {/* <p>ID: {business.business_ID}</p> */}
+      <p>{business.city}, {business.state}</p>
     </div>
   );
 };

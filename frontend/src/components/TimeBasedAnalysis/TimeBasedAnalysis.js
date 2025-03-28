@@ -6,9 +6,13 @@ import './TimeBasedAnalysis.css';
 const TimeBasedAnalysis = () => {
   const [businesses, setBusinesses] = useState([]);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
+
+  // For text search, state dropdown, and city dropdown
   const [searchText, setSearchText] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+
+  // For chart data
   const [graphData, setGraphData] = useState([]);
   const [viewType, setViewType] = useState('monthly');
   const [selectedYear, setSelectedYear] = useState('');
@@ -33,14 +37,16 @@ const TimeBasedAnalysis = () => {
       });
   }, []);
 
+  // Select a business and load its chart data
   const handleBusinessSelect = (business) => {
     setSelectedBusiness(business);
     loadGraphData(business, viewType, selectedYear);
   };
 
+  // Load chart data from either monthly or quarterly JSON
   const loadGraphData = (business, view, year) => {
-    const file = view === 'monthly' 
-      ? '/business_monthly_trends.json' 
+    const file = view === 'monthly'
+      ? '/business_monthly_trends.json'
       : '/business_quarterly_trends.json';
     fetch(file)
       .then((res) => res.json())
@@ -55,21 +61,39 @@ const TimeBasedAnalysis = () => {
       });
   };
 
-  // Reload chart when view type or year changes
+  // Reload chart when view type or year changes (and a business is selected)
   useEffect(() => {
     if (selectedBusiness) {
       loadGraphData(selectedBusiness, viewType, selectedYear);
     }
   }, [viewType, selectedYear]);
 
+  // Gather unique states from the businesses
+  const uniqueStates = Array.from(new Set(businesses.map(b => b.state).filter(Boolean))).sort();
+
+  // Gather unique cities based on the selected state
+  const uniqueCities = selectedState
+    ? Array.from(
+        new Set(
+          businesses
+            .filter(b => b.state === selectedState)
+            .map(b => b.city)
+            .filter(Boolean)
+        )
+      ).sort()
+    : [];
 
   // Filter businesses based on search text, selected state, and selected city
-  const filteredBusinesses = businesses.filter((b) =>
-    b.business_name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredBusinesses = businesses.filter((b) => {
+    const matchesSearch = b.business_name.toLowerCase().includes(searchText.toLowerCase());
+    const matchesState = selectedState ? b.state === selectedState : true;
+    const matchesCity = selectedCity ? b.city === selectedCity : true;
+    return matchesSearch && matchesState && matchesCity;
+  });
 
   return (
     <div className="analysis-container">
+      {/* Left Panel: Filters + Business List */}
       <div className="analysis-left-panel">
         <input
           type="text"
@@ -78,7 +102,42 @@ const TimeBasedAnalysis = () => {
           onChange={(e) => setSearchText(e.target.value)}
           className="analysis-filter"
         />
-        
+
+        <div className="dropdown-group">
+          <label>State:</label>
+          <select
+            value={selectedState}
+            onChange={(e) => {
+              setSelectedState(e.target.value);
+              setSelectedCity(''); // reset city when state changes
+            }}
+          >
+            <option value="">All States</option>
+            {uniqueStates.map((state, idx) => (
+              <option key={idx} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedState && (
+          <div className="dropdown-group">
+            <label>City:</label>
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
+              <option value="">All Cities</option>
+              {uniqueCities.map((city, idx) => (
+                <option key={idx} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {filteredBusinesses.map((business) => (
           <BusinessCard
             key={business.business_ID}
@@ -88,6 +147,7 @@ const TimeBasedAnalysis = () => {
         ))}
       </div>
 
+      {/* Right Panel: Chart Area */}
       <div className="analysis-right-panel">
         {selectedBusiness ? (
           <div className="analysis-card">
