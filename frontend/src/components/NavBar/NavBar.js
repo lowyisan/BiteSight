@@ -49,10 +49,13 @@ const NavBar = () => {
           </a>
         </li>
         <li>
-          <a href="#/">
+          <NavLink 
+            to="/city-analysis"
+            className={({ isActive }) => (isActive ? 'active-link' : undefined)}
+          >
             <FaCity className="sidebar-icon" />
             <span>City-Based Analysis</span>
-          </a>
+          </NavLink>
         </li>
       </ul>
     </div>
