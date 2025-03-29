@@ -4,6 +4,17 @@ import BusinessCard from '../BusinessCard/BusinessCard';
 import CityAnalysisGraph from './LandingPageGraph';
 import './LandingPage.css';
 
+// MUI components
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Fade from '@mui/material/Fade';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Fade ref={ref} timeout={{ enter: 300, exit: 250 }} {...props} />
+));
+
 const LandingPage = () => {
   const [summaryKPIs, setSummaryKPIs] = useState([]);
   const [businesses, setBusinesses] = useState([]);
@@ -119,14 +130,50 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
-
-        {selectedBusiness && (
-          <div className="overview-chart-container">
-            <h2>{selectedBusiness.business_name}</h2>
-            <CityAnalysisGraph business={selectedBusiness} />
-          </div>
-        )}
       </div>
+
+      {/* MODAL */}
+      <Dialog
+        open={!!selectedBusiness}
+        onClose={() => setSelectedBusiness(null)}
+        TransitionComponent={Transition}
+        keepMounted={false}
+        unmountOnExit
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          style: {
+            borderRadius: 12,
+            transition: 'all 0.35s ease-in-out'
+          }
+        }}
+        BackdropProps={{
+          style: { backdropFilter: 'blur(2px)' }
+        }}
+      >
+        {selectedBusiness && (
+          <>
+            <DialogTitle sx={{ m: 0, p: 2 }}>
+              {selectedBusiness.business_name}
+              <IconButton
+                aria-label="close"
+                onClick={() => setSelectedBusiness(null)}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <div style={{ padding: '0 24px 24px' }}>
+              <CityAnalysisGraph business={selectedBusiness} />
+            </div>
+          </>
+        )}
+      </Dialog>
     </div>
   );
 };
