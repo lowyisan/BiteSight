@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
-import WordCloud from 'react-wordcloud'; // Use react-wordcloud for word cloud
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
+import WordCloud from 'react-wordcloud';
 
 const SentimentAnalysis = () => {
   const [data, setData] = useState([]);
@@ -14,11 +25,11 @@ const SentimentAnalysis = () => {
   useEffect(() => {
     Papa.parse('/sentiment.csv', {
       download: true,
+      header: true,
       complete: (result) => {
         const rawData = result.data.slice(1); // Remove header
         setData(rawData);
       },
-      header: true,
     });
   }, []);
 
@@ -37,7 +48,7 @@ const SentimentAnalysis = () => {
     fetch('/positive_wordcloud.json')
       .then((response) => response.json())
       .then((jsonData) => {
-        const positiveCloudData = jsonData.map(item => ({
+        const positiveCloudData = jsonData.map((item) => ({
           text: item.word,
           value: item.count,
         }));
@@ -48,7 +59,7 @@ const SentimentAnalysis = () => {
     fetch('/negative_wordcloud.json')
       .then((response) => response.json())
       .then((jsonData) => {
-        const negativeCloudData = jsonData.map(item => ({
+        const negativeCloudData = jsonData.map((item) => ({
           text: item.word,
           value: item.count,
         }));
@@ -68,10 +79,11 @@ const SentimentAnalysis = () => {
       if (row.sentiment === 'negative') sentimentCounts.negative++;
       if (row.sentiment === 'neutral') sentimentCounts.neutral++;
 
-      // Sentiment from rating
+      // Example logic (placeholder):
+      // If you have actual star rating logic, replace this with your real mapping.
       if (row.sentiment === 'positive') ratingCounts.positive++;
-      if (row.sentiment === 'negative') ratingCounts.neutral++;
-      if (row.sentiment === 'neutral') ratingCounts.negative++;
+      if (row.sentiment === 'negative') ratingCounts.negative++;
+      if (row.sentiment === 'neutral') ratingCounts.neutral++;
     });
 
     return { sentimentCounts, ratingCounts };
@@ -79,96 +91,142 @@ const SentimentAnalysis = () => {
 
   const { sentimentCounts, ratingCounts } = sentimentComparisonData();
 
+  // Colors for Pie charts
+  const pieColors = ['#00C49F', '#FF8042', '#8B8B8B'];
+
   return (
-    <div>
-      <h2>Sentiment Analysis of Reviews</h2>
+    <div
+      style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '2rem 1rem',
+      }}
+    >
+      <h2 style={{ marginBottom: '2rem' }}>Sentiment Analysis of Reviews</h2>
 
       {/* Word Frequency Chart */}
       {wordFrequency.length > 0 && (
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={wordFrequency}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="word" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="positive" fill="#82ca9d" />
-            <Bar dataKey="negative" fill="#FF8042" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ marginBottom: '3rem' }}>
+          <h3 style={{ marginBottom: '1rem' }}>Top Word Frequencies</h3>
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer>
+              <BarChart data={wordFrequency}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="word" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="positive" fill="#82ca9d" />
+                <Bar dataKey="negative" fill="#FF8042" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       )}
 
       {/* Sentiment Comparison Chart */}
-      <h3>Sentiment Comparison: Text vs. Star Rating</h3>
-      <div style={{ display: 'flex' }}>
-        <PieChart width={300} height={300}>
-          <Pie
-            data={[
-              { name: 'Positive (Text)', value: sentimentCounts.positive },
-              { name: 'Negative (Text)', value: sentimentCounts.negative },
-              { name: 'Neutral (Text)', value: sentimentCounts.neutral },
-            ]}
-            dataKey="value"
-            outerRadius={80}
-            fill="#82ca9d"
-          >
-            <Cell fill="#00C49F" />
-            <Cell fill="#FF8042" />
-            <Cell fill="#8B8B8B" />
-          </Pie>
-          <Tooltip />
-        </PieChart>
+      <div style={{ marginBottom: '3rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Sentiment Comparison: Text vs. Star Rating</h3>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '3rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Pie: Text Sentiment */}
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ marginBottom: '1rem' }}>Text-Based Sentiment</h4>
+            <PieChart width={260} height={260}>
+              <Pie
+                data={[
+                  { name: 'Positive', value: sentimentCounts.positive },
+                  { name: 'Negative', value: sentimentCounts.negative },
+                  { name: 'Neutral', value: sentimentCounts.neutral },
+                ]}
+                dataKey="value"
+                outerRadius={80}
+              >
+                {pieColors.map((color, index) => (
+                  <Cell key={`cell-${index}`} fill={color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </div>
 
-        <PieChart width={300} height={300}>
-          <Pie
-            data={[
-              { name: 'Positive (Rating)', value: ratingCounts.positive },
-              { name: 'Negative (Rating)', value: ratingCounts.negative },
-              { name: 'Neutral (Rating)', value: ratingCounts.neutral },
-            ]}
-            dataKey="value"
-            outerRadius={80}
-            fill="#FF8042"
-          >
-            <Cell fill="#00C49F" />
-            <Cell fill="#FF8042" />
-            <Cell fill="#8B8B8B" />
-          </Pie>
-          <Tooltip />
-        </PieChart>
+          {/* Pie: Star Rating Sentiment */}
+          <div style={{ textAlign: 'center' }}>
+            <h4 style={{ marginBottom: '1rem' }}>Star Rating Sentiment</h4>
+            <PieChart width={260} height={260}>
+              <Pie
+                data={[
+                  { name: 'Positive', value: ratingCounts.positive },
+                  { name: 'Negative', value: ratingCounts.negative },
+                  { name: 'Neutral', value: ratingCounts.neutral },
+                ]}
+                dataKey="value"
+                outerRadius={80}
+              >
+                {pieColors.map((color, index) => (
+                  <Cell key={`cell-${index}`} fill={color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </div>
+        </div>
       </div>
 
-      {/* Positive Word Cloud */}
-      <h3>Positive Reviews Word Cloud</h3>
-      {positiveWordCloudData.length > 0 && (
-        <WordCloud
-            words={positiveWordCloudData}
-            size={[500,500]}
-            options={{
-            rotationAngles: [0],
-            fontSizes:[20, 200], // Reduce font size difference
-            padding: 2, // Reduce space between words
-            spiral: 'archimedean', // Adjust spiral to make it compact
-            scale: 'sqrt', // Scaling option for words
-        }}
-      />
-        
-      )}
+      {/* Word Clouds side by side */}
+      <div>
+        <h3 style={{ marginBottom: '1rem' }}>Word Clouds</h3>
+        <div
+          style={{
+            display: 'flex',
+            gap: '2rem',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Positive Word Cloud */}
+          <div style={{ textAlign: 'center' }}>
+            <h4>Positive Reviews</h4>
+            {positiveWordCloudData.length > 0 && (
+              <WordCloud
+                words={positiveWordCloudData}
+                size={[350, 350]}
+                options={{
+                  rotationAngles: [0],
+                  fontSizes: [16, 80],
+                  padding: 2,
+                  spiral: 'archimedean',
+                  scale: 'sqrt',
+                }}
+              />
+            )}
+          </div>
 
-      {/* Negative Word Cloud */}
-      <h3>Negative Reviews Word Cloud</h3>
-      {negativeWordCloudData.length > 0 && (
-        <WordCloud
-            words={negativeWordCloudData}
-            size={[500,500]}
-            options={{
-            rotationAngles: [0],
-            fontSizes:[20, 200], // Reduce font size difference
-            padding: 2, // Reduce space between words
-            spiral: 'archimedean', // Adjust spiral to make it compact
-            scale: 'sqrt', // Scaling option for words
-        }}/>
-      )}
+          {/* Negative Word Cloud */}
+          <div style={{ textAlign: 'center' }}>
+            <h4>Negative Reviews</h4>
+            {negativeWordCloudData.length > 0 && (
+              <WordCloud
+                words={negativeWordCloudData}
+                size={[350, 350]}
+                options={{
+                  rotationAngles: [0],
+                  fontSizes: [16, 80],
+                  padding: 2,
+                  spiral: 'archimedean',
+                  scale: 'sqrt',
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

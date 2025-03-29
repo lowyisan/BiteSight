@@ -28,10 +28,13 @@ const NavBar = () => {
           </NavLink>
         </li>
         <li>
-          <a href="/sentiment">
+          <NavLink
+            to="/sentiment"
+            className={({ isActive }) => (isActive ? 'active-link' : undefined)}
+          >
             <FaRegSmileBeam className="sidebar-icon" />
             <span>Sentiment-Based Analysis</span>
-          </a>
+          </NavLink>
         </li>
         <li>
           <NavLink 
