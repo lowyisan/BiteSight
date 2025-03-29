@@ -10,12 +10,16 @@ import {
   Legend
 } from 'chart.js';
 
+import RecommendationCard from '../RecommendationCard/RecommendationCard';
 import '../TimeBasedAnalysis/AnalysisGraph.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend);
 
-const LandingPageGraph = ({ business }) => {
+const LandingPageGraph = ({ business, recommendations = [] }) => {
   if (!business) return null;
+
+  console.log("📊 Rendering LandingPageGraph for:", business.business_name);
+  console.log("📦 Recommendations received:", recommendations);
 
   const stars = [0, 1, 2, 3, 4, 5];
   const starCounts = stars.map(star => parseInt(business[`sum_star${star}`] || 0));
@@ -52,7 +56,7 @@ const LandingPageGraph = ({ business }) => {
     }
   };
 
-  const avgRating = parseFloat(business.avg_rating).toFixed(2);
+  const avgRating = parseFloat(business.avg_rating || 0).toFixed(2);
 
   const renderHours = () => {
     if (!business.hours || !Array.isArray(business.hours)) return "No hours available";
@@ -67,12 +71,31 @@ const LandingPageGraph = ({ business }) => {
   return (
     <div className="chart-container">
       <Bar data={chartData} options={chartOptions} />
+
       <p className="chart-note">
         <strong>Average Rating:</strong> {avgRating}
         <br />
         <strong>Operating Hours:</strong><br />
         {renderHours()}
       </p>
+
+      {/* 🧠 Recommended Businesses */}
+      {recommendations.length > 0 && (
+        <div style={{ marginTop: '20px' }}>
+          <h4>Businesses You May Like:</h4>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            gap: '12px',
+            overflowX: 'auto',
+            padding: '10px 0',
+          }}>
+            {recommendations.map((rec, idx) => (
+              <RecommendationCard key={idx} recommendation={rec} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
