@@ -40,9 +40,13 @@ const CityBasedInsights = ({
     "Hotspot Cities": "/hotspot_cities_per_category.json"
   };
 
+  // Reset and fetch new data when analysis type changes
   useEffect(() => {
     const path = dataMap[analysisType];
     if (!path) return;
+
+    setData([]); // Clear previous data
+
     fetch(path)
       .then(res => res.json())
       .then(setData)
@@ -61,7 +65,8 @@ const CityBasedInsights = ({
     <div className="insight-card">
       <h2>{analysisType}</h2>
       <p>
-        Please select {analysisType === "Average Business Hours" ? "a state" : "both a state and a city"} to view insights.
+        Please select {analysisType === "Average Business Hours" ? "a state" :
+          analysisType === "Top Categories" ? "a state and city" : "a category"} to view insights.
       </p>
     </div>
   );
@@ -76,7 +81,12 @@ const CityBasedInsights = ({
       d => normalize(d.city) === city && normalize(d.state) === state
     );
 
-    if (!filtered.length) return noDataMessage;
+    if (!filtered.length) return (
+      <div className="insight-card">
+        <h2>Top Categories</h2>
+        <p>No data available for {selectedCity}, {selectedState}.</p>
+      </div>
+    );
 
     const top = filtered
       .sort((a, b) => b.business_count - a.business_count)
@@ -99,7 +109,12 @@ const CityBasedInsights = ({
 
     const filtered = data.filter(d => normalize(d.state) === state);
 
-    if (!filtered.length) return noDataMessage;
+    if (!filtered.length) return (
+      <div className="insight-card">
+        <h2>Average Business Hours</h2>
+        <p>No data available for {selectedState}.</p>
+      </div>
+    );
 
     const sorted = [...filtered].sort((a, b) =>
       b.avg_days_open_per_business - a.avg_days_open_per_business
@@ -120,17 +135,17 @@ const CityBasedInsights = ({
   }
 
   else if (analysisType === "Hotspot Cities") {
-    if (!selectedCategory) {
-      return (
-        <div className="insight-card">
-          <h2>Hotspot Cities</h2>
-          <p>Please select a category to view insights.</p>
-        </div>
-      );
-    }
+    if (!selectedCategory) return noDataMessage;
 
     const filtered = data.filter(d =>
       normalize(d.category) === normalize(selectedCategory)
+    );
+
+    if (!filtered.length) return (
+      <div className="insight-card">
+        <h2>Hotspot Cities</h2>
+        <p>No data available for the category "{selectedCategory}".</p>
+      </div>
     );
 
     const topCities = filtered

@@ -6,8 +6,6 @@ import json
 import boto3
 
 # ==== PATH CONFIGS ====
-aggregated_path = "s3://sg.edu.sit.inf2006.group14/aggregated-r-00000"
-yelp_json_path = "s3://sg.edu.sit.inf2006.group14/yelp_dataset/yelp_academic_dataset_business.json"
 city_enriched_dataset = "s3://sg.edu.sit.inf2006.group14/final-output/enriched_businesses/part-00000-14744aaa-4b29-41eb-a31f-63f036c0d618-c000.json"
 
 bucket = "sg.edu.sit.inf2006.group14"
