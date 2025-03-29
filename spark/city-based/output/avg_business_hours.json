@@ -1,0 +1,1632 @@
+[
+  {
+    "state": "IN",
+    "city": "Indianapolis",
+    "avg_days_open_per_business": 6.526881720430108
+  },
+  {
+    "state": "PA",
+    "city": "Jenkintown",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "FL",
+    "city": "Lutz",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "PA",
+    "city": "Washington Crossing",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Elkins Park",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Chester Springs",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Burlington",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Overland",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Clifton Heights",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IN",
+    "city": "Indianapolis city (balance)",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Narberth",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Springfield",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Marlton",
+    "avg_days_open_per_business": 6.833333333333333
+  },
+  {
+    "state": "PA",
+    "city": "King Of Prussia",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "PA",
+    "city": "Souderton",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Philadelphia",
+    "avg_days_open_per_business": 6.489583333333333
+  },
+  {
+    "state": "FL",
+    "city": "Safety Harbor",
+    "avg_days_open_per_business": 5.8
+  },
+  {
+    "state": "MO",
+    "city": "Olivette",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "New Orleans",
+    "avg_days_open_per_business": 6.48314606741573
+  },
+  {
+    "state": "FL",
+    "city": "South Pasadena",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "Gloucester Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Feasterville Trevose",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Cheltenham",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "DE",
+    "city": "New Castle",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Gulfport",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "PA",
+    "city": "Hatfield",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Newtown Square",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Glassboro",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Willingboro",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Fort Washington",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "FL",
+    "city": "Valrico",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Marrero",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Ferguson",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "FL",
+    "city": "Seffner",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "East Norriton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "New Port Richey",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "NJ",
+    "city": "Sicklerville",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "IN",
+    "city": "Whitestown",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Bridgeport",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "wimauma",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "Mullica Hill",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Apollo Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Plumsteadville",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "PA",
+    "city": "Harleysville",
+    "avg_days_open_per_business": 4.0
+  },
+  {
+    "state": "TN",
+    "city": "Smyrna",
+    "avg_days_open_per_business": 6.875
+  },
+  {
+    "state": "IL",
+    "city": "Fairview Heights",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "IN",
+    "city": "Noblesville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "St.Pete Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Zephyrhills",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Logan Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "St Pete Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Springfield",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Chalfont",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Belleville",
+    "avg_days_open_per_business": 6.2
+  },
+  {
+    "state": "NJ",
+    "city": "Gloucester City",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Bellevue",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "LA",
+    "city": "Chalmette",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "TN",
+    "city": "Nashville",
+    "avg_days_open_per_business": 6.51948051948052
+  },
+  {
+    "state": "FL",
+    "city": "Clearwater",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "PA",
+    "city": "New Hope",
+    "avg_days_open_per_business": 6.285714285714286
+  },
+  {
+    "state": "NJ",
+    "city": "West Deptford",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Lawrence Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "MADISON",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "O'fallon",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Ewing Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Florissant",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "PA",
+    "city": "Trevose",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "IN",
+    "city": "Carmel",
+    "avg_days_open_per_business": 6.888888888888889
+  },
+  {
+    "state": "AZ",
+    "city": "Marana",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Gretna",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "NJ",
+    "city": "Swedesboro",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Temple Terrace",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Warminster",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "ID",
+    "city": "Eagle",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "MO",
+    "city": "Bridgeton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "La Vergne",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Ambler",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "NJ",
+    "city": "Mount Holly",
+    "avg_days_open_per_business": 6.4
+  },
+  {
+    "state": "ID",
+    "city": "Boise",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "PA",
+    "city": "Lansdale",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "NV",
+    "city": "Verdi",
+    "avg_days_open_per_business": 3.0
+  },
+  {
+    "state": "LA",
+    "city": "Arabi",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Bellmawr",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Haddon Heights",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "FL",
+    "city": "Holiday",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "IN",
+    "city": "Plainfield",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "NJ",
+    "city": "Camden",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Bryn Mawr",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "TN",
+    "city": "Nolensville",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "LA",
+    "city": "Kenner",
+    "avg_days_open_per_business": 6.888888888888889
+  },
+  {
+    "state": "PA",
+    "city": "Kirklyn",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Glen Mills",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "NJ",
+    "city": "Sewell",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Spring House",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Arnold",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Hudson",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "NJ",
+    "city": "Woodbury",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "CA",
+    "city": "Carpinteria",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Seminole",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "DE",
+    "city": "Hockessin",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Kennett Square",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "PA",
+    "city": "Buckingham",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "IL",
+    "city": "Waterloo",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "FOLSOM",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "AB",
+    "city": "Saint Albert",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "IL",
+    "city": "Caseyville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Medford",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "River Ridge",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "St Charles",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "MO",
+    "city": "Valley Park",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Cherry Hill",
+    "avg_days_open_per_business": 6.642857142857143
+  },
+  {
+    "state": "MO",
+    "city": "Hazelwood",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "PA",
+    "city": "Wyndmoor",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Doylestown",
+    "avg_days_open_per_business": 6.555555555555555
+  },
+  {
+    "state": "FL",
+    "city": "Dade City",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "IL",
+    "city": "Granite City",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Glendora",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "IN",
+    "city": "Zionsville",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "MO",
+    "city": "Clayton",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "NJ",
+    "city": "Bordentown",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "PA",
+    "city": "Morton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Fenton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "St. Charles",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Conshohocken",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Maryland Heights",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Ardmore",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "CA",
+    "city": "Montecito",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "St. Pete Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Creve Coeur",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Pitman",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "PA",
+    "city": "Dublin",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "TN",
+    "city": "White House",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Odessa",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Ladue",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Exton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Woodstown",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Drexel Hill",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "IN",
+    "city": "Clermont",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Earth City",
+    "avg_days_open_per_business": 1.0
+  },
+  {
+    "state": "CA",
+    "city": "Santa Barbara",
+    "avg_days_open_per_business": 6.233333333333333
+  },
+  {
+    "state": "IL",
+    "city": "Edwardsville",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "West Berlin",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "AB",
+    "city": "Edmonton",
+    "avg_days_open_per_business": 6.635135135135135
+  },
+  {
+    "state": "FL",
+    "city": "Clearwater Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Lebanon",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "DE",
+    "city": "Newark",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "PA",
+    "city": "Schwenksville",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Limerick",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "AZ",
+    "city": "Oro Valley",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Berlin",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Hamilton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Mt. Juliet",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Skippack",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Ballwin",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Lahaska",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Wesley Chapel",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Riverview",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Pinellas Park",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "West Conshohocken",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Madison",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Linwood",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Wayne",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "TN",
+    "city": "Gallatin",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Hermitage",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Bensalem",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Madeira Beach",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "PA",
+    "city": "Havertown",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Ewing",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Colmar",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "MO",
+    "city": "Des Peres",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IN",
+    "city": "Beech Grove",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "NJ",
+    "city": "Riverton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Hendersonville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "DE",
+    "city": "Wilmington",
+    "avg_days_open_per_business": 6.555555555555555
+  },
+  {
+    "state": "NJ",
+    "city": "Mantua",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "West Chester",
+    "avg_days_open_per_business": 6.615384615384615
+  },
+  {
+    "state": "NJ",
+    "city": "Blackwood",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Royersford",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "PA",
+    "city": "Levittown",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "King of Prussia",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "O Fallon",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Collegeville",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "FL",
+    "city": "Dunedin",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "LA",
+    "city": "Harahan",
+    "avg_days_open_per_business": 5.666666666666667
+  },
+  {
+    "state": "TN",
+    "city": "Kingston Springs",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "CA",
+    "city": "Isla Vista",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "PA",
+    "city": "Audubon",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "St. Ann",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Brentwood",
+    "avg_days_open_per_business": 6.6
+  },
+  {
+    "state": "IL",
+    "city": "Swansea",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IN",
+    "city": "Brownsburg",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "IN",
+    "city": "Greenwood",
+    "avg_days_open_per_business": 6.571428571428571
+  },
+  {
+    "state": "PA",
+    "city": "Media",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "AZ",
+    "city": "Tucson",
+    "avg_days_open_per_business": 6.703703703703703
+  },
+  {
+    "state": "NJ",
+    "city": "Malaga",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Williamstown",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Richmond Heights",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Nashville-Davidson metropolitan government (balance)",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "Trenton",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "Pennington",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IN",
+    "city": "Mooresville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Palmyra",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "St. Petersburg",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "TN",
+    "city": "Old Hickory",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NJ",
+    "city": "Delran",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Broomall",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Mount Juliet",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "NJ",
+    "city": "Voorhees Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Richboro",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Laurel Springs",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Horsham",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "FL",
+    "city": "Saint Petersburg",
+    "avg_days_open_per_business": 6.7368421052631575
+  },
+  {
+    "state": "FL",
+    "city": "Plant City",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Hatboro",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Maplewood",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Lansdowne",
+    "avg_days_open_per_business": 3.5
+  },
+  {
+    "state": "FL",
+    "city": "TAMPA",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Wynnewood",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "FL",
+    "city": "Oldsmar",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Palmetto",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "NV",
+    "city": "Reno",
+    "avg_days_open_per_business": 6.315789473684211
+  },
+  {
+    "state": "FL",
+    "city": "Spring Hill",
+    "avg_days_open_per_business": 6.857142857142857
+  },
+  {
+    "state": "FL",
+    "city": "Largo",
+    "avg_days_open_per_business": 6.857142857142857
+  },
+  {
+    "state": "MO",
+    "city": "Manchester",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "NJ",
+    "city": "Cinnaminson",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "PA",
+    "city": "Pottstown",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Montgomeryville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Belle Chasse",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Gentilly",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Glenolden",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Palm Harbor",
+    "avg_days_open_per_business": 6.6
+  },
+  {
+    "state": "PA",
+    "city": "Norristown",
+    "avg_days_open_per_business": 6.571428571428571
+  },
+  {
+    "state": "FL",
+    "city": "Land O' Lakes",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Feasterville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Yardley",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Aston",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Saint Pete Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Ruskin",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "MO",
+    "city": "Saint Louis",
+    "avg_days_open_per_business": 6.104166666666667
+  },
+  {
+    "state": "PA",
+    "city": "Newtown",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Somerdale",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Bethalto",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "PA",
+    "city": "Huntingdon Valley",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Beverly",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "St Petersburg",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Westmont",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Moorestown",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "MO",
+    "city": "St Louis",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "AB",
+    "city": "St Albert",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "University City",
+    "avg_days_open_per_business": 2.0
+  },
+  {
+    "state": "IN",
+    "city": "Speedway",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "CA",
+    "city": "Goleta",
+    "avg_days_open_per_business": 6.785714285714286
+  },
+  {
+    "state": "NJ",
+    "city": "Deptford",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "PA",
+    "city": "Malvern",
+    "avg_days_open_per_business": 6.2
+  },
+  {
+    "state": "MO",
+    "city": "Kirkwood",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "LA",
+    "city": "Harvey",
+    "avg_days_open_per_business": 5.8
+  },
+  {
+    "state": "LA",
+    "city": "Metarie",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "TN",
+    "city": "Antioch",
+    "avg_days_open_per_business": 6.666666666666667
+  },
+  {
+    "state": "NJ",
+    "city": "Pennsauken",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "MO",
+    "city": "St.Louis",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Riveridge",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Columbia",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "IL",
+    "city": "Alton",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "NJ",
+    "city": "Turnersville",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "PA",
+    "city": "Bala Cynwyd",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "NJ",
+    "city": "Westville",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "MO",
+    "city": "Saint Charles",
+    "avg_days_open_per_business": 6.714285714285714
+  },
+  {
+    "state": "PA",
+    "city": "Collingdale",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "LA",
+    "city": "Metairie",
+    "avg_days_open_per_business": 6.733333333333333
+  },
+  {
+    "state": "PA",
+    "city": "Swarthmore",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Kulpsville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Downingtown",
+    "avg_days_open_per_business": 5.5
+  },
+  {
+    "state": "AZ",
+    "city": "Vail",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "AZ",
+    "city": "Green Valley",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Joelton",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "ID",
+    "city": "Garden City",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "AB",
+    "city": "St. Albert",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "DE",
+    "city": "Talleyville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "Sunset Hills",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Willow Grove",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "TN",
+    "city": "NASHVILLE",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Glenside",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Maple Shade",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Millstadt",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IN",
+    "city": "Fishers",
+    "avg_days_open_per_business": 6.625
+  },
+  {
+    "state": "IL",
+    "city": "Collinsville",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NV",
+    "city": "Sun Valley",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Springhill",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Feasterville-Trevose",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NV",
+    "city": "Sparks",
+    "avg_days_open_per_business": 6.7272727272727275
+  },
+  {
+    "state": "TN",
+    "city": "Franklin",
+    "avg_days_open_per_business": 6.565217391304348
+  },
+  {
+    "state": "PA",
+    "city": "Phoenixville",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Prospect Park",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Wyncote",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Perkiomenville",
+    "avg_days_open_per_business": 4.0
+  },
+  {
+    "state": "MO",
+    "city": "High Ridge",
+    "avg_days_open_per_business": 5.0
+  },
+  {
+    "state": "NJ",
+    "city": "Collingswood",
+    "avg_days_open_per_business": 6.25
+  },
+  {
+    "state": "NJ",
+    "city": "Haddon Township",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "Wood River",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Clementon",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Sun City Center",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "DE",
+    "city": "Aston",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Brandon",
+    "avg_days_open_per_business": 6.933333333333334
+  },
+  {
+    "state": "NJ",
+    "city": "Mickleton",
+    "avg_days_open_per_business": 3.0
+  },
+  {
+    "state": "FL",
+    "city": "Lithia",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "ID",
+    "city": "Meridian",
+    "avg_days_open_per_business": 6.888888888888889
+  },
+  {
+    "state": "FL",
+    "city": "Port Richey",
+    "avg_days_open_per_business": 6.5
+  },
+  {
+    "state": "NJ",
+    "city": "Voorhees",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "AZ",
+    "city": "Corona de Tucson",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Abington",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "IL",
+    "city": "O'Fallon",
+    "avg_days_open_per_business": 6.333333333333333
+  },
+  {
+    "state": "NJ",
+    "city": "Lawnside",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "MO",
+    "city": "St. Louis",
+    "avg_days_open_per_business": 6.32258064516129
+  },
+  {
+    "state": "FL",
+    "city": "Indian Rocks Beach",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Mount Laurel",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "NJ",
+    "city": "Haddonfield",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "NJ",
+    "city": "Barrington",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "LA",
+    "city": "Terrytown",
+    "avg_days_open_per_business": 6.75
+  },
+  {
+    "state": "TN",
+    "city": "Goodlettsville",
+    "avg_days_open_per_business": 6.0
+  },
+  {
+    "state": "PA",
+    "city": "Woodlyn",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "TN",
+    "city": "Ashland City",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "LA",
+    "city": "Westwego",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Tampa",
+    "avg_days_open_per_business": 6.520408163265306
+  },
+  {
+    "state": "AB",
+    "city": "Sherwood Park",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "FL",
+    "city": "Tarpon Springs",
+    "avg_days_open_per_business": 7.0
+  },
+  {
+    "state": "PA",
+    "city": "Fairless Hills",
+    "avg_days_open_per_business": 7.0
+  }
+]

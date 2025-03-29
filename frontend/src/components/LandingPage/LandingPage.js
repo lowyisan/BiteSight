@@ -35,7 +35,7 @@ const LandingPage = () => {
     });
   
     // 2. Load businesses and enrich recommendations
-    fetch('/city_enriched_business.json')
+    fetch('/business_details.json')
       .then(res => res.json())
       .then((businessesData) => {
         setBusinesses(businessesData);

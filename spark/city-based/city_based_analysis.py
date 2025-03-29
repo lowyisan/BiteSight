@@ -1,42 +1,75 @@
+import os
+import json
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    col, explode, split, trim, lower, avg, count, desc, when, sum as spark_sum
+    col, explode, split, trim, lower, avg, count, desc, when, sum as spark_sum,
+    from_json, regexp_replace, round as spark_round
 )
-import json
-import boto3
+from pyspark.sql.types import MapType, StringType, IntegerType
 
-# ==== PATH CONFIGS ====
-city_enriched_dataset = "s3://sg.edu.sit.inf2006.group14/final-output/enriched_businesses/part-00000-14744aaa-4b29-41eb-a31f-63f036c0d618-c000.json"
+# ==== FILE PATHS ====
+raw_dataset = "./dataset/small-aggregated-r-00000"
+output_dir = "./city-based/output"
 
-bucket = "sg.edu.sit.inf2006.group14"
-output_prefix = "final-output/analysis/"
 output_files = {
-    "top_categories_per_city.json": "/tmp/top_categories_per_city.json",
-    "avg_business_hours.json": "/tmp/avg_business_hours.json",
-    "hotspot_cities_per_category.json": "/tmp/hotspot_cities_per_category.json"
+    "top_categories_per_city.json": f"{output_dir}/top_categories_per_city.json",
+    "avg_business_hours.json": f"{output_dir}/avg_business_hours.json",
+    "hotspot_cities_per_category.json": f"{output_dir}/hotspot_cities_per_category.json",
+    "business_details.json": f"{output_dir}/business_details.json"
 }
 
-# ==== SPARK INIT ====
-spark = SparkSession.builder.appName("CityBasedAnalysis").getOrCreate()
-df = spark.read.json(city_enriched_dataset)
+# Create output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
 
-# ============ 1. TOP CATEGORIES PER CITY ============
+# ==== SPARK SESSION ====
+spark = SparkSession.builder \
+    .appName("CityBasedAnalysis") \
+    .master("local[*]") \
+    .config("spark.driver.memory", "4g") \
+    .getOrCreate()
+
+# ==== LOAD DATA ====
+df = spark.read.csv(raw_dataset, sep="\t", header=False, inferSchema=True)
+
+df = df.toDF(
+    "business_id", "name", "address", "city", "state", "postal",
+    "lat", "lon", "categories", "opening_hours",
+    "sum_star0", "sum_star1", "sum_star2", "sum_star3", "sum_star4", "sum_star5", "sum_totalreviews"
+)
+
+# Convert counts to integers
+for col_name in ["sum_star0", "sum_star1", "sum_star2", "sum_star3", "sum_star4", "sum_star5", "sum_totalreviews"]:
+    df = df.withColumn(col_name, col(col_name).cast(IntegerType()))
+
+# ==== CLEAN CATEGORIES ====
 exploded_df = df.withColumn("category", explode(split(col("categories"), ",")))
 cleaned_categories = exploded_df.withColumn("category", trim(lower(col("category"))))
 
+# ==== TOP CATEGORIES PER CITY ====
 top_categories = (
     cleaned_categories.groupBy("state", "city", "category")
     .agg(count("*").alias("business_count"))
     .orderBy("state", "city", desc("business_count"))
 )
 
-# ============ 2. AVERAGE BUSINESS HOURS ============
+# ==== AVERAGE BUSINESS HOURS (DAYS OPEN) ====
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-with_hours = df.filter(col("hours").isNotNull())
+
+opening_hours_schema = MapType(StringType(), StringType())
+df = df.withColumn("opening_hours_clean", from_json(
+    regexp_replace(col("opening_hours"), "'", '"'),
+    opening_hours_schema
+))
+
+with_hours = df.filter(col("opening_hours_clean").isNotNull())
+
+for day in DAYS:
+    with_hours = with_hours.withColumn(
+        f"{day}_open", when(col(f"opening_hours_clean.{day}").isNotNull(), 1).otherwise(0)
+    )
 
 hours_per_business = with_hours.withColumn(
-    "days_open",
-    sum(when(col(f"hours.{day}").isNotNull(), 1).otherwise(0) for day in DAYS)
+    "days_open", sum(col(f"{day}_open") for day in DAYS)
 )
 
 avg_hours = (
@@ -44,7 +77,7 @@ avg_hours = (
     .agg(avg("days_open").alias("avg_days_open_per_business"))
 )
 
-# ============ 3. HOTSPOT CITIES FOR ALL CATEGORIES ============
+# ==== HOTSPOT CITIES PER CATEGORY ====
 hotspot = (
     cleaned_categories.groupBy("category", "state", "city")
     .agg(
@@ -59,19 +92,72 @@ hotspot = (
     .orderBy("category", desc("total_reviews"))
 )
 
-# ============ WRITE TO SINGLE-FILE JSON OUTPUTS ============
+# ==== BUSINESS DETAILS ====
 
-def save_as_single_json(df_result, local_path, s3_key):
+# Compute avg rating
+df = df.withColumn("avg_rating", spark_round(
+    (
+        col("sum_star0") * 0 +
+        col("sum_star1") * 1 +
+        col("sum_star2") * 2 +
+        col("sum_star3") * 3 +
+        col("sum_star4") * 4 +
+        col("sum_star5") * 5
+    ) / when(col("sum_totalreviews") > 0, col("sum_totalreviews")).otherwise(1),
+    2
+))
+
+# Reformat hours into a 7-element array for frontend
+from pyspark.sql.functions import array
+
+for day in DAYS:
+    df = df.withColumn(
+        f"hour_{day}",
+        col("opening_hours_clean").getItem(day)
+    )
+
+# Create ordered array for hours Mon–Sun
+df = df.withColumn("hours", array(
+    col("hour_Monday"),
+    col("hour_Tuesday"),
+    col("hour_Wednesday"),
+    col("hour_Thursday"),
+    col("hour_Friday"),
+    col("hour_Saturday"),
+    col("hour_Sunday")
+))
+
+# Final selected business fields
+business_details = df.select(
+    col("business_id"),
+    col("name").alias("business_name"),
+    "city", "state",
+    col("lat").alias("latitude"),
+    col("lon").alias("longitude"),
+    "sum_star0", "sum_star1", "sum_star2", "sum_star3", "sum_star4", "sum_star5",
+    "sum_totalreviews",
+    "avg_rating",
+    "categories",
+    "address",
+    col("postal").alias("postal_code"),
+    "hours"
+)
+
+# ==== SAVE TO JSON FUNCTION ====
+
+def save_as_single_json(df_result, local_path):
     collected = df_result.toJSON().collect()
     parsed = [json.loads(x) for x in collected]
 
     with open(local_path, "w") as f:
         json.dump(parsed, f, indent=2)
 
-    boto3.client("s3").upload_file(local_path, bucket, output_prefix + s3_key)
+    print(f"Saved to {local_path}")
 
-save_as_single_json(top_categories, output_files["top_categories_per_city.json"], "top_categories_per_city.json")
-save_as_single_json(avg_hours, output_files["avg_business_hours.json"], "avg_business_hours.json")
-save_as_single_json(hotspot, output_files["hotspot_cities_per_category.json"], "hotspot_cities_per_category.json")
+# ==== SAVE ALL FILES ====
+save_as_single_json(top_categories, output_files["top_categories_per_city.json"])
+save_as_single_json(avg_hours, output_files["avg_business_hours.json"])
+save_as_single_json(hotspot, output_files["hotspot_cities_per_category.json"])
+save_as_single_json(business_details, output_files["business_details.json"])
 
 spark.stop()
