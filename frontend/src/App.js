@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage/LandingPage';
 import TimeBasedAnalysis from './components/TimeBasedAnalysis/TimeBasedAnalysis';
 import SentimentAnalysis from './components/SentimentAnalysis/SentimentAnalysis';
 import CityBasedAnalysis from './components/CityBasedAnalysis/CityBasedAnalysis';
+import GeospatialSentimentAnalysis from './components/GeospatialSentimentAnalysis/GeospatialSentimentAnalysis';
 import './App.css';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/analysis" element={<TimeBasedAnalysis />} />
             <Route path="/sentiment" element={<SentimentAnalysis />} />
             <Route path="/city-analysis" element={<CityBasedAnalysis />} />
+            <Route path="/GeospatialSentimentAnalysis" element={<GeospatialSentimentAnalysis />} />
           </Routes>
         </div>
       </div>

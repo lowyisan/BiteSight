@@ -46,10 +46,13 @@ const NavBar = () => {
           </NavLink>
         </li>
         <li>
-          <a href="#/">
+          <NavLink 
+            to="/GeospatialSentimentAnalysis"
+            className={({ isActive }) => (isActive ? 'active-link' : undefined)}
+          >
             <FaMapMarkedAlt className="sidebar-icon" />
             <span>Geospatial Analysis</span>
-          </a>
+          </NavLink>
         </li>
         <li>
           <NavLink 
