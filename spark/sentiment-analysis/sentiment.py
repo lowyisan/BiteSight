@@ -22,7 +22,7 @@ spark = SparkSession.builder \
 df = spark.read.csv("./spark/dataset/small-r-00000", sep='\t', header=False, inferSchema=True)
 
 # Manually assign column names as per your dataset structure
-df = df.toDF("business_id", "business_name", "city", "state", "latitude", "longitude", "review_star", "review_text", "datetime")
+df = df.toDF("business_id", "name", "address", "city", "state", "postal", "lat", "lon", "categories", "opening_hours","stars", "review_text", "datetime")
 
 # Tokenize the review text
 tokenizer = RegexTokenizer(inputCol="review_text", outputCol="words", pattern="\\W+")
