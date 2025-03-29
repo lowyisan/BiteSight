@@ -25,22 +25,18 @@ const LandingPage = () => {
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
 
-  // ✅ Load data
   useEffect(() => {
-    // 1. Load KPI CSV
     Papa.parse('/yelp_summary_kpis.csv', {
       download: true,
       header: true,
       complete: (results) => setSummaryKPIs(results.data),
     });
-  
-    // 2. Load businesses and enrich recommendations
+
     fetch('/business_details.json')
       .then(res => res.json())
       .then((businessesData) => {
         setBusinesses(businessesData);
-  
-        // 3. Load + enrich recommendations
+
         fetch('/top5_similar_businesses.json')
           .then(res => res.text())
           .then(text => {
@@ -55,6 +51,8 @@ const LandingPage = () => {
                     ...rec,
                     city: meta?.city || '',
                     state: meta?.state || '',
+                    address: meta?.address || '',
+                    postal: meta?.postal_code || '',
                     avg_rating: meta?.avg_rating || null
                   };
                 });
@@ -63,12 +61,10 @@ const LandingPage = () => {
                 console.warn('Invalid JSON line in recommendations:', line);
               }
             });
-            console.log("✅ Loaded recommendations:", map);
             setRecommendationMap(map);
           });
       });
   }, []);
-  
 
   const metricLabels = {
     total_businesses: "Total Businesses",
@@ -181,13 +177,18 @@ const LandingPage = () => {
         {selectedBusiness && (
           <>
             <DialogTitle sx={{ m: 0, p: 2 }}>
-              {selectedBusiness.business_name}
+              <div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                  {selectedBusiness.business_name}
+                </div>
+
+              </div>
               <IconButton
                 aria-label="close"
                 onClick={() => setSelectedBusiness(null)}
                 sx={{
                   position: 'absolute',
-                  right: 20,
+                  right: 8,
                   top: 8,
                   color: (theme) => theme.palette.grey[500],
                 }}
@@ -195,10 +196,13 @@ const LandingPage = () => {
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
+
             <div style={{ padding: '0 24px 24px' }}>
               <CityAnalysisGraph
                 business={selectedBusiness}
                 recommendations={recommendationMap[selectedBusiness.business_id] || []}
+                businesses={businesses}
+                onBusinessSelect={setSelectedBusiness}
               />
             </div>
           </>

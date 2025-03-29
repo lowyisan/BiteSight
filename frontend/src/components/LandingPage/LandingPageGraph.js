@@ -15,11 +15,8 @@ import '../TimeBasedAnalysis/AnalysisGraph.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Title, Legend);
 
-const LandingPageGraph = ({ business, recommendations = [] }) => {
+const LandingPageGraph = ({ business, recommendations = [], businesses, onBusinessSelect }) => {
   if (!business) return null;
-
-  console.log("📊 Rendering LandingPageGraph for:", business.business_name);
-  console.log("📦 Recommendations received:", recommendations);
 
   const stars = [0, 1, 2, 3, 4, 5];
   const starCounts = stars.map(star => parseInt(business[`sum_star${star}`] || 0));
@@ -56,7 +53,7 @@ const LandingPageGraph = ({ business, recommendations = [] }) => {
     }
   };
 
-  const avgRating = parseFloat(business.avg_rating || 0).toFixed(2);
+  const avgRating = parseFloat(business.avg_rating || business.stars || 0).toFixed(2);
 
   const renderHours = () => {
     if (!business.hours || !Array.isArray(business.hours)) return "No hours available";
@@ -72,17 +69,29 @@ const LandingPageGraph = ({ business, recommendations = [] }) => {
     <div className="chart-container">
       <Bar data={chartData} options={chartOptions} />
 
-      <p className="chart-note">
-        <strong>Average Rating:</strong> {avgRating}
-        <br />
-        <strong>Operating Hours:</strong><br />
-        {renderHours()}
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '50px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '100px', flexWrap: 'wrap', maxWidth: '600px', width: '100%' }}>
+          {/* LEFT SIDE */}
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <p style={{ marginBottom: 8 }}><strong>Average Rating:</strong> {avgRating}</p>
+            <p style={{ marginBottom: 8 }}><strong>Address:</strong> {business.address}</p>
+            <p style={{ marginBottom: 8 }}>
+              <strong>Location:</strong> {business.city}, {business.state}, {business.postal_code}
+            </p>
+          </div>
 
-      {/* 🧠 Recommended Businesses */}
-      {recommendations.length > 0 && (
+          {/* RIGHT SIDE - HOURS */}
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <p><strong>Operating Hours:</strong></p>
+            {renderHours()}
+          </div>
+        </div>
+      </div>
+
+
+            {recommendations.length > 0 && (
         <div style={{ marginTop: '20px' }}>
-          <h4>Businesses You May Like:</h4>
+          <h4>Businesses Similar to <span style={{ color: '#0073e6' }}>{business.business_name}</span></h4>
           <div style={{
             display: 'flex',
             flexWrap: 'nowrap',
@@ -91,11 +100,21 @@ const LandingPageGraph = ({ business, recommendations = [] }) => {
             padding: '10px 0',
           }}>
             {recommendations.map((rec, idx) => (
-              <RecommendationCard key={idx} recommendation={rec} />
+              <RecommendationCard
+                key={idx}
+                recommendation={rec}
+                onSelect={(selected) => {
+                  const newBusiness = businesses.find(b => b.business_id === selected.recommended_business_id);
+                  if (newBusiness) {
+                    onBusinessSelect(newBusiness);
+                  }
+                }}
+              />
             ))}
           </div>
         </div>
       )}
+
     </div>
   );
 };
