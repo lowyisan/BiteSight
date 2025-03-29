@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import sys
 import json
@@ -10,10 +9,10 @@ import numpy as np
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, year, month, quarter, avg, count, round, stddev,
-    date_format, coalesce, lit, collect_list, lag, when
+    date_format, coalesce, lit, collect_list, lag, when, to_timestamp
 )
 from pyspark.sql.types import (
-    StructType, StructField, StringType, DoubleType, TimestampType
+    StructType, StructField, StringType, FloatType, DoubleType, TimestampType
 )
 from pyspark.sql.window import Window
 
@@ -27,9 +26,7 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
-#####################
-# Spark Functions   #
-#####################
+### Spark Functions
 
 def prepare_spark_session():
     """
@@ -42,46 +39,60 @@ def prepare_spark_session():
             .config("spark.driver.memory", "4g")
             .getOrCreate())
 
-def load_and_preprocess_data(spark, input_path):
+def create_yelp_schema():
     """
-    Load and preprocess Yelp business reviews data.
+    Create a custom schema for the new Yelp dataset:
+    business_id, name, address, city, state, postal,
+    lat, lon, categories, opening_hours, stars, review_text, datetime
     """
-    schema = StructType([
-        StructField("business_ID", StringType(), False),
-        StructField("business_name", StringType(), False),
+    return StructType([
+        StructField("business_id", StringType(), True),
+        StructField("name", StringType(), True),
+        StructField("address", StringType(), True),
         StructField("city", StringType(), True),
         StructField("state", StringType(), True),
-        StructField("lat", DoubleType(), True),
-        StructField("lon", DoubleType(), True),
-        StructField("stars", DoubleType(), False),
+        StructField("postal", StringType(), True),
+        StructField("lat", FloatType(), True),
+        StructField("lon", FloatType(), True),
+        StructField("categories", StringType(), True),
+        StructField("opening_hours", StringType(), True),
+        StructField("stars", DoubleType(), True),
         StructField("review_text", StringType(), True),
-        StructField("review_date", TimestampType(), False)
+        # We'll read datetime as string then convert to timestamp below.
+        StructField("datetime", StringType(), True)
     ])
 
+def load_and_preprocess_data(spark, input_path):
+    """
+    Load and preprocess Yelp business reviews data using the new dataset schema.
+    Converts the datetime string to a timestamp and extracts year, month, and quarter.
+    """
+    schema = create_yelp_schema()
     df = (spark.read
           .format("csv")
           .option("sep", "\t")
           .option("header", "false")
           .schema(schema)
           .load(input_path)
-          .withColumn("year", year(col("review_date")).cast("integer"))
-          .withColumn("month", month(col("review_date")).cast("integer"))
-          .withColumn("quarter", quarter(col("review_date")))
-          .withColumn("formatted_review_date", date_format(col("review_date"), "yyyy-MM-dd HH:mm:ss"))
-          .na.drop(subset=["business_ID", "stars", "review_date"])
+          # Convert datetime string to timestamp.
+          .withColumn("review_timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
+          .withColumn("year", year(col("review_timestamp")).cast("integer"))
+          .withColumn("month", month(col("review_timestamp")).cast("integer"))
+          .withColumn("quarter", quarter(col("review_timestamp")))
+          .withColumn("formatted_review_date", date_format(col("review_timestamp"), "yyyy-MM-dd HH:mm:ss"))
+          .na.drop(subset=["business_id", "stars", "datetime"])
          )
     return df
-
 
 def compute_monthly_trends(df):
     """
     Return a DataFrame with columns:
-    business_ID, business_name, city, state, year, month,
+    business_id, name, city, state, year, month,
     monthly_avg_rating, monthly_rating_std, review_volume
     """
     monthly_base = (
         df.groupBy(
-            "business_ID", "business_name", "city", "state", "year", "month"
+            "business_id", "name", "city", "state", "year", "month"
         )
         .agg(
             round(avg("stars"), 2).alias("monthly_avg_rating"),
@@ -93,23 +104,22 @@ def compute_monthly_trends(df):
 
 def analyze_business_trends(df, output_dir):
     """
-    Perform comprehensive business-specific time-based analysis
+    Perform business-specific time-based analysis for quarterly and monthly trends,
+    then export the results as JSON.
     """
-    # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
 
     # Business-level Quarterly Trends
     business_quarterly_trends = (df
         .groupBy(
-            col("business_ID"),
-            col("business_name"),
+            col("business_id"),
+            col("name"),
             col("year"),
-            quarter("review_date").alias("quarter")
+            quarter("review_timestamp").alias("quarter")
         )
         .agg(
             round(avg("stars"), 2).alias("avg_quarterly_rating"),
             count("*").alias("total_reviews"),
-            # Use coalesce to replace potential NaN with 0
             coalesce(round(stddev("stars"), 2), lit(0.0)).alias("rating_volatility")
         )
     )
@@ -117,84 +127,56 @@ def analyze_business_trends(df, output_dir):
     # Business-level Monthly Trends
     business_monthly_trends = (df
         .groupBy(
-            col("business_ID"),
-            col("business_name"),
+            col("business_id"),
+            col("name"),
             col("year"),
             col("month")
         )
         .agg(
             round(avg("stars"), 2).alias("monthly_avg_rating"),
-            # Use coalesce to replace potential NaN with 0
             coalesce(round(stddev("stars"), 2), lit(0.0)).alias("monthly_rating_std"),
             count("*").alias("review_volume")
         )
     )
 
-
     # Convert to Pandas and save reports
     business_quarterly_report = business_quarterly_trends.toPandas().fillna(0)
     business_monthly_report = business_monthly_trends.toPandas().fillna(0)
 
-
-    # Prepare detailed reporting dictionary
-    business_trend_report = {
-        "quarterly_trends": business_quarterly_report.to_dict(orient="records"),
-        "monthly_trends": business_monthly_report.to_dict(orient="records"),
-    }
-
-    # Save individual reports
+    # Save JSON reports
     quarterly_output_path = os.path.join(output_dir, 'business_quarterly_trends.json')
     monthly_output_path = os.path.join(output_dir, 'business_monthly_trends.json')
-
-    # Save JSON reports
     with open(quarterly_output_path, 'w') as f:
         json.dump(business_quarterly_report.to_dict(orient="records"), f, indent=2)
     with open(monthly_output_path, 'w') as f:
         json.dump(business_monthly_report.to_dict(orient="records"), f, indent=2)
 
     print(f"Business trend analysis reports saved to: {output_dir}")
-    return business_trend_report
+    return {
+        "quarterly_trends": business_quarterly_report.to_dict(orient="records"),
+        "monthly_trends": business_monthly_report.to_dict(orient="records")
+    }
 
 def detect_spikes_and_dips(monthly_base, threshold=1.0):
     """
     For each business, compare monthly_avg_rating with previous month.
-    If difference is > +threshold => 'spike', if < -threshold => 'dip'.
     Returns a DataFrame with columns:
-      business_ID, year, month, monthly_avg_rating, prev_avg_rating, rating_diff, spike_or_dip
+      business_id, name, year, month, monthly_avg_rating, prev_avg_rating, rating_diff, spike_or_dip
     """
-    # Window partitioned by business, ordered by year and month
-    w = Window.partitionBy("business_ID").orderBy("year", "month")
-
-    # Add previous month's rating
-    df_with_prev = monthly_base.withColumn(
-        "prev_avg_rating",
-        lag("monthly_avg_rating").over(w)
-    )
-
-    # rating_diff = current - previous
-    df_with_diff = df_with_prev.withColumn(
-        "rating_diff",
-        col("monthly_avg_rating") - col("prev_avg_rating")
-    )
-
-    # Define spike_or_dip
-    # e.g., threshold=1.0 => if rating_diff > 1 => spike, if rating_diff < -1 => dip
+    w = Window.partitionBy("business_id").orderBy("year", "month")
+    df_with_prev = monthly_base.withColumn("prev_avg_rating", lag("monthly_avg_rating").over(w))
+    df_with_diff = df_with_prev.withColumn("rating_diff", col("monthly_avg_rating") - col("prev_avg_rating"))
     df_flagged = df_with_diff.withColumn(
         "spike_or_dip",
         when(col("rating_diff") > threshold, lit("spike"))
         .when(col("rating_diff") < -threshold, lit("dip"))
         .otherwise(lit(None))
     )
-
-    # Filter out rows that are neither spike nor dip
     df_flagged = df_flagged.filter(col("spike_or_dip").isNotNull())
-
     return df_flagged
-    
 
-##############################
-# Topic Modeling Functions  #
-##############################
+
+### Topic Modeling Functions
 
 def preprocess_reviews(review_texts):
     """
@@ -231,48 +213,35 @@ def run_topic_modeling(review_texts, num_topics=3):
 
 def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
     """
-    For each flagged row (spike or dip), gather the review texts from the original df
-    for that business + year + month, run topic modeling, and store the result.
+    For each flagged row (spike or dip), gather the review texts for that business, year, and month,
+    run topic modeling, and export the results as JSON.
     """
-    # Convert flagged_df to Pandas so we can iterate
     flagged_pd = flagged_df.toPandas()
-
-    # We'll store results in a list of dict
     results = []
     for _, row in flagged_pd.iterrows():
-        biz_id = row["business_ID"]
+        biz_id = row["business_id"]
         year_ = row["year"]
         month_ = row["month"]
         spike_or_dip = row["spike_or_dip"]
         rating_diff = row["rating_diff"]
         monthly_avg = row["monthly_avg_rating"]
         prev_avg = row["prev_avg_rating"]
-        biz_name = row["business_name"]
-        city = row["city"]
-        state = row["state"]
-
-        # Filter original df for that business and month
-        # We'll gather all the review_text for that month
+        biz_name = row["name"]
+        # For this example, city and state are not included in monthly trends; 
+        # you could join with a business table if needed.
         reviews_sdf = df.filter(
-            (col("business_ID") == biz_id) &
+            (col("business_id") == biz_id) &
             (col("year") == year_) &
             (col("month") == month_)
         )
-
-        # Collect the reviews
         reviews = reviews_sdf.select("review_text").rdd.flatMap(lambda x: x).collect()
-
-        # Run topic modeling on these reviews
         if len(reviews) > 0:
             topics = run_topic_modeling(reviews, num_topics=3)
         else:
             topics = []
-
         results.append({
-            "business_ID": biz_id,
-            "business_name": biz_name,
-            "city": city,
-            "state": state,
+            "business_id": biz_id,
+            "name": biz_name,
             "year": int(year_),
             "month": int(month_),
             "monthly_avg_rating": float(monthly_avg) if monthly_avg else None,
@@ -281,37 +250,33 @@ def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
             "spike_or_dip": spike_or_dip,
             "topics": topics
         })
-
-    # Write to JSON
     spike_dip_output_path = os.path.join(output_dir, "spike_dip_topic_modeling.json")
     with open(spike_dip_output_path, "w") as f:
         json.dump(results, f, indent=2)
-
     print(f"Spike/Dip topic modeling results saved to: {spike_dip_output_path}")
-
 
 def main(input_path, output_dir):
     spark = prepare_spark_session()
     try:
-        # load data
+        # Load and preprocess data
         reviews_df = load_and_preprocess_data(spark, input_path)
-
-        # compute monthly trends
+        
+        # Compute monthly trends
         monthly_base = compute_monthly_trends(reviews_df)
-
-        # detect spikes and dips
+        
+        # Detect spikes and dips
         flagged_df = detect_spikes_and_dips(monthly_base, threshold=1.0)
-
-        # run topic modeling for flagged months
+        
+        # Run topic modeling for flagged months and export results
         analyze_spikes_dips_topic_modeling(spark, reviews_df, flagged_df, output_dir)
-
-        # monthly/quarterly analysis
+        
+        # Also run and export business trends (monthly and quarterly)
         analyze_business_trends(reviews_df, output_dir)
-
+    
     except Exception as e:
         traceback.print_exc()
     finally:
         spark.stop()
 
 if __name__ == "__main__":
-    main("../dataset/small-r-00000", "output")
+    main("../dataset/small-raw-r-00000", "output")

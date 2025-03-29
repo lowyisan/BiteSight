@@ -50,7 +50,7 @@ const LandingPage = () => {
               try {
                 const entry = JSON.parse(line);
                 const enrichedRecs = entry.recommendations.map((rec) => {
-                  const meta = businessesData.find(b => b.business_id === rec.recommended_business_ID);
+                  const meta = businessesData.find(b => b.business_id === rec.recommended_business_id);
                   return {
                     ...rec,
                     city: meta?.city || '',
@@ -58,7 +58,7 @@ const LandingPage = () => {
                     avg_rating: meta?.avg_rating || null
                   };
                 });
-                map[entry.business_ID] = enrichedRecs;
+                map[entry.business_id] = enrichedRecs;
               } catch (e) {
                 console.warn('Invalid JSON line in recommendations:', line);
               }

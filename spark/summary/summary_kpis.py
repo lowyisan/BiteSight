@@ -95,7 +95,6 @@ def main():
     )
     
     try:
-        # Adjust these paths as needed
         input_file = "../dataset/small-raw-r-00000"
         output_directory = "output"
         

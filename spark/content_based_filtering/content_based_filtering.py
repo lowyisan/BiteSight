@@ -13,16 +13,16 @@ def main():
         .getOrCreate()
 
     # ----------------------------------------
-    # 2. Load the raw business review data
+    # 2. Load the raw business review data with new schema
     # ----------------------------------------
     raw_columns = [
-        "business_ID", "business_name", "city", "state", "lat", "lon",
-        "star", "review_text", "review_date"
+        "business_id", "name", "address", "city", "state", "postal",
+        "lat", "lon", "categories", "opening_hours", "stars", "review_text", "datetime"
     ]
 
     raw_df = (
         spark.read.csv(
-            "../dataset/small-r-00000",
+            "../dataset/small-raw-r-00000",
             sep="\t",
             header=False,
             inferSchema=True
@@ -56,16 +56,16 @@ def main():
     # 5. Aggregate Vectors Per Business
     # ----------------------------------------
     business_profiles = (
-        vector_df.groupBy("business_ID")
+        vector_df.groupBy("business_id")
         .agg(
-            first("business_name").alias("business_name"),
+            first("name").alias("name"),
             first("city").alias("city"),
             first("state").alias("state"),
             collect_list("features").alias("feature_vectors")
         )
     )
 
-    # Average the vectors
+    # Average the vectors per business
     from pyspark.ml.linalg import Vectors, VectorUDT
     import numpy as np
     from pyspark.sql.functions import udf
@@ -79,7 +79,8 @@ def main():
 
     avg_vector_udf = udf(avg_vector, VectorUDT())
 
-    business_profiles = business_profiles.withColumn("profile_vector", avg_vector_udf(col("feature_vectors"))).drop("feature_vectors")
+    business_profiles = business_profiles.withColumn("profile_vector", avg_vector_udf(col("feature_vectors"))) \
+                                         .drop("feature_vectors")
 
     # ----------------------------------------
     # 6. Cross Join for Cosine Similarity
@@ -98,7 +99,7 @@ def main():
 
     joined_df = a.join(
         b,
-        (a["business_ID"] != b["business_ID"]) & (a["city"] == b["city"])
+        (a["business_id"] != b["business_id"]) & (a["city"] == b["city"])
     )
 
     similarity_df = joined_df.withColumn(
@@ -109,26 +110,26 @@ def main():
     # ----------------------------------------
     # 7. Top 5 Similar Businesses Per Business
     # ----------------------------------------
-    windowSpec = Window.partitionBy("a.business_ID").orderBy(col("similarity").desc())
+    windowSpec = Window.partitionBy("a.business_id").orderBy(col("similarity").desc())
 
     top_n = (
         similarity_df.withColumn("rank", row_number().over(windowSpec))
         .filter(col("rank") <= 5)
         .select(
-            col("a.business_ID").alias("business_ID"),
-            col("a.business_name").alias("business_name"),
-            col("b.business_ID").alias("recommended_business_ID"),
-            col("b.business_name").alias("recommended_name"),
+            col("a.business_id").alias("business_id"),
+            col("a.name").alias("name"),
+            col("b.business_id").alias("recommended_business_id"),
+            col("b.name").alias("recommended_name"),
             col("similarity"),
             col("a.city").alias("city")
         )
     )
 
-    # Group and save
-    grouped_df = top_n.groupBy("business_ID", "business_name", "city").agg(
+    # Group and save the recommendations per business
+    grouped_df = top_n.groupBy("business_id", "name", "city").agg(
         collect_list(
             struct(
-                "recommended_business_ID",
+                "recommended_business_id",
                 "recommended_name",
                 "similarity"
             )
