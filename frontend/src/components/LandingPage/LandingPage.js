@@ -4,7 +4,7 @@ import BusinessCard from '../BusinessCard/BusinessCard';
 import CityAnalysisGraph from './LandingPageGraph';
 import './LandingPage.css';
 
-// MUI components
+// MUI
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
@@ -18,23 +18,57 @@ const Transition = React.forwardRef((props, ref) => (
 const LandingPage = () => {
   const [summaryKPIs, setSummaryKPIs] = useState([]);
   const [businesses, setBusinesses] = useState([]);
+  const [recommendationMap, setRecommendationMap] = useState({});
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
 
+  // ✅ Load data
   useEffect(() => {
+    // 1. Load KPI CSV
     Papa.parse('/yelp_summary_kpis.csv', {
       download: true,
       header: true,
       complete: (results) => setSummaryKPIs(results.data),
     });
-
+  
+    // 2. Load businesses and enrich recommendations
     fetch('/city_enriched_business.json')
       .then(res => res.json())
-      .then(setBusinesses);
+      .then((businessesData) => {
+        setBusinesses(businessesData);
+  
+        // 3. Load + enrich recommendations
+        fetch('/top5_similar_businesses.json')
+          .then(res => res.text())
+          .then(text => {
+            const lines = text.split('\n').filter(Boolean);
+            const map = {};
+            lines.forEach(line => {
+              try {
+                const entry = JSON.parse(line);
+                const enrichedRecs = entry.recommendations.map((rec) => {
+                  const meta = businessesData.find(b => b.business_id === rec.recommended_business_ID);
+                  return {
+                    ...rec,
+                    city: meta?.city || '',
+                    state: meta?.state || '',
+                    avg_rating: meta?.avg_rating || null
+                  };
+                });
+                map[entry.business_ID] = enrichedRecs;
+              } catch (e) {
+                console.warn('Invalid JSON line in recommendations:', line);
+              }
+            });
+            console.log("✅ Loaded recommendations:", map);
+            setRecommendationMap(map);
+          });
+      });
   }, []);
+  
 
   const metricLabels = {
     total_businesses: "Total Businesses",
@@ -132,7 +166,7 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* Modal */}
       <Dialog
         open={!!selectedBusiness}
         onClose={() => setSelectedBusiness(null)}
@@ -141,15 +175,8 @@ const LandingPage = () => {
         unmountOnExit
         fullWidth
         maxWidth="md"
-        PaperProps={{
-          style: {
-            borderRadius: 12,
-            transition: 'all 0.35s ease-in-out'
-          }
-        }}
-        BackdropProps={{
-          style: { backdropFilter: 'blur(2px)' }
-        }}
+        PaperProps={{ style: { borderRadius: 12 } }}
+        BackdropProps={{ style: { backdropFilter: 'blur(2px)' } }}
       >
         {selectedBusiness && (
           <>
@@ -160,7 +187,7 @@ const LandingPage = () => {
                 onClick={() => setSelectedBusiness(null)}
                 sx={{
                   position: 'absolute',
-                  right: 8,
+                  right: 20,
                   top: 8,
                   color: (theme) => theme.palette.grey[500],
                 }}
@@ -169,7 +196,10 @@ const LandingPage = () => {
               </IconButton>
             </DialogTitle>
             <div style={{ padding: '0 24px 24px' }}>
-              <CityAnalysisGraph business={selectedBusiness} />
+              <CityAnalysisGraph
+                business={selectedBusiness}
+                recommendations={recommendationMap[selectedBusiness.business_id] || []}
+              />
             </div>
           </>
         )}
