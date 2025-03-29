@@ -1,21 +1,19 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, first, row_number, collect_list, struct
 from pyspark.sql.types import DoubleType
-from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF
-from pyspark.ml.linalg import Vectors
 from pyspark.sql.window import Window
-from pyspark.ml.stat import Summarizer
+from pyspark.ml.feature import Tokenizer, StopWordsRemover, Word2Vec
 
 def main():
     # ----------------------------------------
     # 1. Start Spark Session
     # ----------------------------------------
     spark = SparkSession.builder \
-        .appName("LocalContentRecommender") \
+        .appName("MLBasedContentRecommender") \
         .getOrCreate()
 
     # ----------------------------------------
-    # 2. Load ONLY the raw data
+    # 2. Load the raw business review data
     # ----------------------------------------
     raw_columns = [
         "business_ID", "business_name", "city", "state", "lat", "lon",
@@ -30,50 +28,65 @@ def main():
             inferSchema=True
         )
         .toDF(*raw_columns)
-
     )
 
     # ----------------------------------------
-    # 3. Text Preprocessing → TF-IDF
+    # 3. Text Preprocessing → Word2Vec
     # ----------------------------------------
-    # Tokenize
     tokenizer = Tokenizer(inputCol="review_text", outputCol="words")
-    words_df = tokenizer.transform(raw_df)
+    tokenized_df = tokenizer.transform(raw_df)
 
-    # Remove stopwords
     remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
-    filtered_df = remover.transform(words_df)
-
-    # Convert words to raw TF vectors
-    hashingTF = HashingTF(inputCol="filtered_words", outputCol="raw_features", numFeatures=1000)
-    tf_df = hashingTF.transform(filtered_df)
-
-    # Compute IDF and create TF-IDF features
-    idf = IDF(inputCol="raw_features", outputCol="tfidf_features")
-    idf_model = idf.fit(tf_df)
-    tfidf_df = idf_model.transform(tf_df)
+    filtered_df = remover.transform(tokenized_df)
 
     # ----------------------------------------
-    # 4. Aggregate TF-IDF Per Business
+    # 4. Train Word2Vec Model
+    # ----------------------------------------
+    word2Vec = Word2Vec(
+        vectorSize=100,
+        minCount=2,
+        inputCol="filtered_words",
+        outputCol="features"
+    )
+
+    model = word2Vec.fit(filtered_df)
+    vector_df = model.transform(filtered_df)
+
+    # ----------------------------------------
+    # 5. Aggregate Vectors Per Business
     # ----------------------------------------
     business_profiles = (
-        tfidf_df.groupBy("business_ID")
+        vector_df.groupBy("business_ID")
         .agg(
-            Summarizer.mean(col("tfidf_features")).alias("profile_vector"),
             first("business_name").alias("business_name"),
             first("city").alias("city"),
-            first("state").alias("state")
+            first("state").alias("state"),
+            collect_list("features").alias("feature_vectors")
         )
-        .dropna(subset=["profile_vector"])
     )
 
+    # Average the vectors
+    from pyspark.ml.linalg import Vectors, VectorUDT
+    import numpy as np
+    from pyspark.sql.functions import udf
+
+    def avg_vector(vecs):
+        if not vecs:
+            return Vectors.dense([0.0]*100)
+        sum_vec = np.sum(vecs, axis=0)
+        avg = sum_vec / len(vecs)
+        return Vectors.dense(avg.tolist())
+
+    avg_vector_udf = udf(avg_vector, VectorUDT())
+
+    business_profiles = business_profiles.withColumn("profile_vector", avg_vector_udf(col("feature_vectors"))).drop("feature_vectors")
+
     # ----------------------------------------
-    # 5. Set Up Cross Join
+    # 6. Cross Join for Cosine Similarity
     # ----------------------------------------
     a = business_profiles.alias("a")
     b = business_profiles.alias("b")
 
-    # Define cosine similarity udf
     def cosine_sim(v1, v2):
         if not v1 or not v2:
             return 0.0
@@ -83,9 +96,6 @@ def main():
 
     cosine_udf = spark.udf.register("cosine_sim", cosine_sim, DoubleType())
 
-    # ----------------------------------------
-    # 6. Cross Join Businesses Within Same City
-    # ----------------------------------------
     joined_df = a.join(
         b,
         (a["business_ID"] != b["business_ID"]) & (a["city"] == b["city"])
@@ -97,7 +107,7 @@ def main():
     )
 
     # ----------------------------------------
-    # 7. Top 5 Recommendations Per Business
+    # 7. Top 5 Similar Businesses Per Business
     # ----------------------------------------
     windowSpec = Window.partitionBy("a.business_ID").orderBy(col("similarity").desc())
 
@@ -114,7 +124,7 @@ def main():
         )
     )
 
-    # Group the top recommendations by business_ID
+    # Group and save
     grouped_df = top_n.groupBy("business_ID", "business_name", "city").agg(
         collect_list(
             struct(
@@ -125,13 +135,9 @@ def main():
         ).alias("recommendations")
     )
 
-    # ----------------------------------------
-    # 8. Save as JSON
-    # ----------------------------------------
-    grouped_df.write.mode("overwrite").json("output/content_recommendations_grouped.json")
+    grouped_df.write.mode("overwrite").json("output/ml_content_recommendations_grouped.json")
 
-    print("Recommendations grouped and saved in 'output/content_recommendations_grouped.json'")
-
+    print("ML-based recommendations saved in 'output/ml_content_recommendations_grouped.json'")
     spark.stop()
 
 if __name__ == "__main__":
