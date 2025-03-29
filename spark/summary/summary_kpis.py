@@ -6,18 +6,24 @@ import pandas as pd
 
 def create_yelp_schema():
     """
-    Create a custom schema for the Yelp dataset
+    Create a custom schema for the new Yelp dataset:
+    business_id, name, address, city, state, postal,
+    lat, lon, categories, opening_hours, stars, review_text, datetime
     """
     return StructType([
-        StructField("business_ID", StringType(), True),
-        StructField("business_name", StringType(), True),
+        StructField("business_id", StringType(), True),
+        StructField("name", StringType(), True),
+        StructField("address", StringType(), True),
         StructField("city", StringType(), True),
         StructField("state", StringType(), True),
+        StructField("postal", StringType(), True),
         StructField("lat", FloatType(), True),
         StructField("lon", FloatType(), True),
-        StructField("star", DoubleType(), True),
+        StructField("categories", StringType(), True),
+        StructField("opening_hours", StringType(), True),
+        StructField("stars", DoubleType(), True),
         StructField("review_text", StringType(), True),
-        StructField("review_date", StringType(), True)
+        StructField("datetime", StringType(), True)
     ])
 
 def calculate_summary_kpis(spark, file_path, output_dir):
@@ -32,18 +38,18 @@ def calculate_summary_kpis(spark, file_path, output_dir):
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
     
-    # Read CSV with explicit schema
+    # Read TSV with the new schema
     df = spark.read.csv(
         file_path, 
         schema=create_yelp_schema(),
         header=False,  # Assuming no header in the file
-        sep='\t'  # Tab-separated values
+        sep='\t'       # Tab-separated values
     )
     
     # Calculate KPIs
-    total_businesses = df.select("business_ID").distinct().count()
+    total_businesses = df.select("business_id").distinct().count()
     total_reviews = df.count()
-    avg_rating = df.select(avg("star")).first()[0]
+    avg_rating = df.select(avg("stars")).first()[0]
 
     # Also count number of distinct states and cities
     num_states = df.select("state").distinct().count()
@@ -63,7 +69,7 @@ def calculate_summary_kpis(spark, file_path, output_dir):
             f"{total_reviews:,}",
             f"{num_states:,}",
             f"{num_cities:,}",
-            round(avg_rating, 2)
+            round(avg_rating, 2) if avg_rating is not None else 0
         ]
     })
     
@@ -83,12 +89,14 @@ def calculate_summary_kpis(spark, file_path, output_dir):
 
 def main():
     # Initialize Spark Session
-    spark = SparkSession.builder \
-        .appName("YelpSummaryKPIsExport") \
+    spark = (SparkSession.builder
+        .appName("YelpSummaryKPIsExport")
         .getOrCreate()
+    )
     
     try:
-        input_file = "../dataset/small-r-00000"
+        # Adjust these paths as needed
+        input_file = "../dataset/small-raw-r-00000"
         output_directory = "output"
         
         calculate_summary_kpis(spark, input_file, output_directory)
