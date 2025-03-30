@@ -1,6 +1,6 @@
 /* Contributor(s): Low Yi San */
 
-analysis-container {
+.analysis-container {
   display: flex;
   gap: 20px;
   max-width: 1200px;
