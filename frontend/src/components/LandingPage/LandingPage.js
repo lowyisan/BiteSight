@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import BusinessCard from '../BusinessCard/BusinessCard';
 import CityAnalysisGraph from './LandingPageGraph';
 import './LandingPage.css';
+import { extractFoodCategories } from '../../utils/categoryUtils'; // ✅ Dynamic filter
 
 // MUI
 import Dialog from '@mui/material/Dialog';
@@ -18,6 +19,7 @@ const Transition = React.forwardRef((props, ref) => (
 const LandingPage = () => {
   const [summaryKPIs, setSummaryKPIs] = useState([]);
   const [businesses, setBusinesses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [recommendationMap, setRecommendationMap] = useState({});
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -26,16 +28,19 @@ const LandingPage = () => {
   const [selectedCity, setSelectedCity] = useState('');
 
   useEffect(() => {
+    // Load KPIs
     Papa.parse('/yelp_summary_kpis.csv', {
       download: true,
       header: true,
       complete: (results) => setSummaryKPIs(results.data),
     });
 
+    // Load businesses + similar recs
     fetch('/business_details.json')
       .then(res => res.json())
       .then((businessesData) => {
         setBusinesses(businessesData);
+        setCategories(extractFoodCategories(businessesData)); // ✅ Dynamic category extraction
 
         fetch('/top5_similar_businesses.json')
           .then(res => res.text())
@@ -74,26 +79,10 @@ const LandingPage = () => {
     num_cities: "Number of Cities"
   };
 
-  const foodKeywords = [
-    "food", "restaurant", "restaurants", "cafe", "bakeries", "coffee", "tea", "deli",
-    "desserts", "juice", "smoothies", "ice cream", "steak", "pizza", "bar", "grill",
-    "bbq", "sushi", "chinese", "thai", "korean", "asian", "indian", "mediterranean",
-    "mexican", "halal", "vegan", "vegetarian", "burgers", "seafood", "noodles", "hotpot",
-    "ramen", "brunch", "bubble tea", "wine", "beer", "snacks", "salad", "soup"
-  ];
-
   const uniqueStates = Array.from(new Set(businesses.map(b => b.state))).sort();
   const uniqueCities = selectedState
     ? Array.from(new Set(businesses.filter(b => b.state === selectedState).map(b => b.city)))
     : [];
-
-  const uniqueCategories = Array.from(
-    new Set(
-      businesses
-        .flatMap(b => b.categories?.split(',').map(c => c.trim().toLowerCase()) || [])
-        .filter(cat => foodKeywords.includes(cat))
-    )
-  ).sort();
 
   const filteredBusinesses = businesses.filter(b => {
     const nameMatch = b.business_name.toLowerCase().includes(searchText.toLowerCase());
@@ -132,7 +121,7 @@ const LandingPage = () => {
 
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="">All Categories</option>
-            {uniqueCategories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
+            {categories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
           </select>
 
           <select value={selectedState} onChange={(e) => {
@@ -162,7 +151,7 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal for business chart and details */}
       <Dialog
         open={!!selectedBusiness}
         onClose={() => setSelectedBusiness(null)}
@@ -177,26 +166,17 @@ const LandingPage = () => {
         {selectedBusiness && (
           <>
             <DialogTitle sx={{ m: 0, p: 2 }}>
-              <div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>
-                  {selectedBusiness.business_name}
-                </div>
-
+              <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                {selectedBusiness.business_name}
               </div>
               <IconButton
                 aria-label="close"
                 onClick={() => setSelectedBusiness(null)}
-                sx={{
-                  position: 'absolute',
-                  right: 8,
-                  top: 8,
-                  color: (theme) => theme.palette.grey[500],
-                }}
+                sx={{ position: 'absolute', right: 8, top: 8, color: 'gray' }}
               >
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
-
             <div style={{ padding: '0 24px 24px' }}>
               <CityAnalysisGraph
                 business={selectedBusiness}
