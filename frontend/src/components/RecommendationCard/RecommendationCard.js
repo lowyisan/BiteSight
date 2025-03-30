@@ -1,3 +1,5 @@
+/* Contributor(s): Nadhirah Binti Ayub Khan */
+
 import React from 'react';
 import './RecommendationCard.css';
 

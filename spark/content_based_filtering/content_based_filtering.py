@@ -1,3 +1,5 @@
+# Contributor(s): Nadhirah Binti Ayub Khan
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, first, row_number, collect_list, struct, concat_ws
 from pyspark.sql.types import DoubleType
