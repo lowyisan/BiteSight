@@ -1,3 +1,5 @@
+// Contributor(s): Kee Han Xiang
+
 import { useEffect, useState } from "react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import STATE_CODE_TO_NAME from './stateCodeMap.json';
