@@ -26,7 +26,8 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
-### Spark Functions
+
+# Spark Functions and Processing   #
 
 def prepare_spark_session():
     """
@@ -42,12 +43,12 @@ def prepare_spark_session():
 def create_yelp_schema():
     """
     Create a custom schema for the new Yelp dataset:
-    business_id, name, address, city, state, postal,
+    business_ID, business_name, address, city, state, postal,
     lat, lon, categories, opening_hours, stars, review_text, datetime
     """
     return StructType([
-        StructField("business_id", StringType(), True),
-        StructField("name", StringType(), True),
+        StructField("business_ID", StringType(), True),
+        StructField("business_name", StringType(), True),
         StructField("address", StringType(), True),
         StructField("city", StringType(), True),
         StructField("state", StringType(), True),
@@ -58,7 +59,6 @@ def create_yelp_schema():
         StructField("opening_hours", StringType(), True),
         StructField("stars", DoubleType(), True),
         StructField("review_text", StringType(), True),
-        # We'll read datetime as string then convert to timestamp below.
         StructField("datetime", StringType(), True)
     ])
 
@@ -74,25 +74,25 @@ def load_and_preprocess_data(spark, input_path):
           .option("header", "false")
           .schema(schema)
           .load(input_path)
-          # Convert datetime string to timestamp.
+          # Convert datetime string to timestamp (adjust format if necessary)
           .withColumn("review_timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
           .withColumn("year", year(col("review_timestamp")).cast("integer"))
           .withColumn("month", month(col("review_timestamp")).cast("integer"))
           .withColumn("quarter", quarter(col("review_timestamp")))
           .withColumn("formatted_review_date", date_format(col("review_timestamp"), "yyyy-MM-dd HH:mm:ss"))
-          .na.drop(subset=["business_id", "stars", "datetime"])
+          .na.drop(subset=["business_ID", "stars", "datetime"])
          )
     return df
 
 def compute_monthly_trends(df):
     """
     Return a DataFrame with columns:
-    business_id, name, city, state, year, month,
+    business_ID, business_name, address, city, state, postal, year, month,
     monthly_avg_rating, monthly_rating_std, review_volume
     """
     monthly_base = (
         df.groupBy(
-            "business_id", "name", "city", "state", "year", "month"
+            "business_ID", "business_name", "address", "city", "state", "postal", "year", "month"
         )
         .agg(
             round(avg("stars"), 2).alias("monthly_avg_rating"),
@@ -104,16 +104,18 @@ def compute_monthly_trends(df):
 
 def analyze_business_trends(df, output_dir):
     """
-    Perform business-specific time-based analysis for quarterly and monthly trends,
-    then export the results as JSON.
+    Compute and export business-specific time-based trends (monthly and quarterly).
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    # Business-level Quarterly Trends
+    # Quarterly Trends: grouping by business_ID, business_name, city, state, postal, year, quarter
     business_quarterly_trends = (df
         .groupBy(
-            col("business_id"),
-            col("name"),
+            col("business_ID"),
+            col("business_name"),
+            col("city"),
+            col("state"),
+            col("postal"),
             col("year"),
             quarter("review_timestamp").alias("quarter")
         )
@@ -124,11 +126,15 @@ def analyze_business_trends(df, output_dir):
         )
     )
 
-    # Business-level Monthly Trends
+    # Monthly Trends
     business_monthly_trends = (df
         .groupBy(
-            col("business_id"),
-            col("name"),
+            col("business_ID"),
+            col("business_name"),
+            col("address"),
+            col("city"),
+            col("state"),
+            col("postal"),
             col("year"),
             col("month")
         )
@@ -139,13 +145,13 @@ def analyze_business_trends(df, output_dir):
         )
     )
 
-    # Convert to Pandas and save reports
+    # Convert to Pandas and export JSON reports
     business_quarterly_report = business_quarterly_trends.toPandas().fillna(0)
     business_monthly_report = business_monthly_trends.toPandas().fillna(0)
 
-    # Save JSON reports
     quarterly_output_path = os.path.join(output_dir, 'business_quarterly_trends.json')
     monthly_output_path = os.path.join(output_dir, 'business_monthly_trends.json')
+
     with open(quarterly_output_path, 'w') as f:
         json.dump(business_quarterly_report.to_dict(orient="records"), f, indent=2)
     with open(monthly_output_path, 'w') as f:
@@ -161,9 +167,9 @@ def detect_spikes_and_dips(monthly_base, threshold=1.0):
     """
     For each business, compare monthly_avg_rating with previous month.
     Returns a DataFrame with columns:
-      business_id, name, year, month, monthly_avg_rating, prev_avg_rating, rating_diff, spike_or_dip
+      business_ID, business_name, year, month, monthly_avg_rating, prev_avg_rating, rating_diff, spike_or_dip
     """
-    w = Window.partitionBy("business_id").orderBy("year", "month")
+    w = Window.partitionBy("business_ID").orderBy("year", "month")
     df_with_prev = monthly_base.withColumn("prev_avg_rating", lag("monthly_avg_rating").over(w))
     df_with_diff = df_with_prev.withColumn("rating_diff", col("monthly_avg_rating") - col("prev_avg_rating"))
     df_flagged = df_with_diff.withColumn(
@@ -175,12 +181,14 @@ def detect_spikes_and_dips(monthly_base, threshold=1.0):
     df_flagged = df_flagged.filter(col("spike_or_dip").isNotNull())
     return df_flagged
 
-
-### Topic Modeling Functions
+#####################################
+# Topic Modeling Functions
+#####################################
 
 def preprocess_reviews(review_texts):
     """
-    Preprocess review texts: lowercase, remove non-alphabetic characters, tokenize, remove stopwords.
+    Preprocess review texts: lowercase, remove non-alphabetic characters,
+    tokenize, and remove stopwords.
     """
     processed = []
     for review in review_texts:
@@ -213,24 +221,22 @@ def run_topic_modeling(review_texts, num_topics=3):
 
 def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
     """
-    For each flagged row (spike or dip), gather the review texts for that business, year, and month,
+    For each flagged row (spike or dip), gather review_texts for that business, year, and month,
     run topic modeling, and export the results as JSON.
     """
     flagged_pd = flagged_df.toPandas()
     results = []
     for _, row in flagged_pd.iterrows():
-        biz_id = row["business_id"]
+        biz_id = row["business_ID"]
         year_ = row["year"]
         month_ = row["month"]
         spike_or_dip = row["spike_or_dip"]
         rating_diff = row["rating_diff"]
         monthly_avg = row["monthly_avg_rating"]
         prev_avg = row["prev_avg_rating"]
-        biz_name = row["name"]
-        # For this example, city and state are not included in monthly trends; 
-        # you could join with a business table if needed.
+        biz_name = row["business_name"]
         reviews_sdf = df.filter(
-            (col("business_id") == biz_id) &
+            (col("business_ID") == biz_id) &
             (col("year") == year_) &
             (col("month") == month_)
         )
@@ -240,8 +246,8 @@ def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
         else:
             topics = []
         results.append({
-            "business_id": biz_id,
-            "name": biz_name,
+            "business_ID": biz_id,
+            "business_name": biz_name,
             "year": int(year_),
             "month": int(month_),
             "monthly_avg_rating": float(monthly_avg) if monthly_avg else None,
@@ -254,6 +260,7 @@ def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
     with open(spike_dip_output_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Spike/Dip topic modeling results saved to: {spike_dip_output_path}")
+
 
 def main(input_path, output_dir):
     spark = prepare_spark_session()
