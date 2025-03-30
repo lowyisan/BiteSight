@@ -48,7 +48,7 @@ const SentimentAnalysis = () => {
     fetch('/positive_wordcloud.json')
       .then((response) => response.json())
       .then((jsonData) => {
-        const positiveCloudData = jsonData.map((item) => ({
+        const positiveCloudData = jsonData.map(item => ({
           text: item.word,
           value: item.count,
         }));
@@ -59,7 +59,7 @@ const SentimentAnalysis = () => {
     fetch('/negative_wordcloud.json')
       .then((response) => response.json())
       .then((jsonData) => {
-        const negativeCloudData = jsonData.map((item) => ({
+        const negativeCloudData = jsonData.map(item => ({
           text: item.word,
           value: item.count,
         }));
@@ -79,11 +79,10 @@ const SentimentAnalysis = () => {
       if (row.sentiment === 'negative') sentimentCounts.negative++;
       if (row.sentiment === 'neutral') sentimentCounts.neutral++;
 
-      // Example logic (placeholder):
-      // If you have actual star rating logic, replace this with your real mapping.
+      // Sentiment from rating
       if (row.sentiment === 'positive') ratingCounts.positive++;
-      if (row.sentiment === 'negative') ratingCounts.negative++;
-      if (row.sentiment === 'neutral') ratingCounts.neutral++;
+      if (row.sentiment === 'negative') ratingCounts.neutral++;
+      if (row.sentiment === 'neutral') ratingCounts.negative++;
     });
 
     return { sentimentCounts, ratingCounts };
