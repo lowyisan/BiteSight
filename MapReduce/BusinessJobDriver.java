@@ -32,6 +32,9 @@ public class BusinessJobDriver {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
+        // Ensure only 1 reducer (1 output file)
+        job.setNumReduceTasks(1);
+
         // Input: Business data with a mapper to filter food businesses
         // Use FileInputFormat to add the input path
         FileInputFormat.addInputPath(job, new Path(args[0]));

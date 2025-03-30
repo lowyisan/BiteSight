@@ -7,7 +7,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, round
 
 # === STEP 1: Convert MapReduce Output to CSV ===
-input_file_path = 'small-aggregated-r-00000'
+# input_file_path = 'small-aggregated-r-00000'
+input_file_path = 'hdfs:///input/dataset/small-aggregated-r-00000'
 intermediate_csv_path = 'output.csv'
 
 with open(input_file_path, 'r', encoding='utf-8-sig') as infile, open(intermediate_csv_path, 'w', newline='', encoding='utf-8-sig') as outfile:
@@ -52,7 +53,8 @@ output_df = df_with_sentiment.select(
 )
 
 # Save as CSV for JSON conversion
-final_csv_path = 'business_sentiment.csv'
+# final_csv_path = 'business_sentiment.csv'
+final_csv_path = 'hdfs:///output/geospatial/business_sentiment.csv'
 output_df.coalesce(1).write.csv("temp_output", header=True, mode="overwrite")
 
 # Move the single CSV file from Spark output dir to final name
@@ -85,7 +87,8 @@ for _, row in df_final.iterrows():
         "opening_hours": row["opening_hours"]
     })
 
-with open("geospatial_sentiment.json", "w", encoding='utf-8') as f:
+# with open("geospatial_sentiment.json", "w", encoding='utf-8') as f:
+with open("/home/hadoop/geospatial_sentiment.json", "w", encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
-print("Step 3: Final JSON saved to sentiment.json ✅")
+print("Step 3: Final JSON saved to sentiment.json ")

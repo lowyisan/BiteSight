@@ -20,7 +20,8 @@ def main():
 
     raw_df = (
         spark.read.csv(
-            "../dataset/small-raw-r-00000", 
+            # "../dataset/small-raw-r-00000", 
+            "hdfs:///input/dataset/small-raw-r-00000",
             sep="\t",
             header=False,
             inferSchema=True
@@ -129,7 +130,8 @@ def main():
     )
 
     grouped_df.write.mode("overwrite").json(
-        "output/top5_similar_businesses.json"
+        # "output/top5_similar_businesses.json"
+        "hdfs:///output/content-based/top5_similar_businesses.json"
     )
 
     print("ML-based recommendations saved at: output/top5_similar_businesses.json")

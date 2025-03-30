@@ -31,6 +31,9 @@ public class JoinDriver {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
+        // Ensure only 1 reducer (1 output file)
+        job.setNumReduceTasks(1);
+
         // Configure multiple outputs: raw and aggregated files
         MultipleOutputs.addNamedOutput(job, "raw", TextOutputFormat.class, Text.class, Text.class);
         MultipleOutputs.addNamedOutput(job, "aggregated", TextOutputFormat.class, Text.class, Text.class);

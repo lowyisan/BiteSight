@@ -10,8 +10,8 @@ from pyspark.sql.functions import (
 from pyspark.sql.types import MapType, StringType, IntegerType
 
 # ==== FILE PATHS ====
-raw_dataset = "./dataset/small-aggregated-r-00000"
-output_dir = "./city-based/output"
+raw_dataset = "hdfs:///input/dataset/small-aggregated-r-00000"
+output_dir = "hdfs:///output/city-based"
 
 output_files = {
     "top_categories_per_city.json": f"{output_dir}/top_categories_per_city.json",
@@ -145,21 +145,34 @@ business_details = df.select(
     "hours"
 )
 
+# ==== LOCALLY ====
+
 # ==== SAVE TO JSON FUNCTION ====
 
-def save_as_single_json(df_result, local_path):
-    collected = df_result.toJSON().collect()
-    parsed = [json.loads(x) for x in collected]
+# def save_as_single_json(df_result, local_path):
+#     collected = df_result.toJSON().collect()
+#     parsed = [json.loads(x) for x in collected]
 
-    with open(local_path, "w") as f:
-        json.dump(parsed, f, indent=2)
+#     with open(local_path, "w") as f:
+#         json.dump(parsed, f, indent=2)
 
-    print(f"Saved to {local_path}")
+#     print(f"Saved to {local_path}")
 
-# ==== SAVE ALL FILES ====
-save_as_single_json(top_categories, output_files["top_categories_per_city.json"])
-save_as_single_json(avg_hours, output_files["avg_business_hours.json"])
-save_as_single_json(hotspot, output_files["hotspot_cities_per_category.json"])
-save_as_single_json(business_details, output_files["business_details.json"])
+# # ==== SAVE ALL FILES ====
+# save_as_single_json(top_categories, output_files["top_categories_per_city.json"])
+# save_as_single_json(avg_hours, output_files["avg_business_hours.json"])
+# save_as_single_json(hotspot, output_files["hotspot_cities_per_category.json"])
+# save_as_single_json(business_details, output_files["business_details.json"])
+
+# ==== HDFS ====
+def save_to_hdfs_json(df_result, hdfs_path):
+    df_result.coalesce(1).write.mode("overwrite").json(hdfs_path)
+    print(f"Written to HDFS: {hdfs_path}")
+
+save_to_hdfs_json(top_categories, output_files["top_categories_per_city.json"])
+save_to_hdfs_json(avg_hours, output_files["avg_business_hours.json"])
+save_to_hdfs_json(hotspot, output_files["hotspot_cities_per_category.json"])
+save_to_hdfs_json(business_details, output_files["business_details.json"])
+
 
 spark.stop()

@@ -32,6 +32,9 @@ public class ReviewJobDriver {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
+        // Ensure only 1 reducer (1 output file)
+        job.setNumReduceTasks(1);
+
         // Input: Review data with a mapper to process reviews
         // Use FileInputFormat to add the input path for the reviews
         FileInputFormat.addInputPath(job, new Path(args[0]));
