@@ -1,3 +1,5 @@
+# Contributor(s): Low Yi San
+
 import sys
 
 def truncate_tsv(input_file, output_file, max_lines=10000):

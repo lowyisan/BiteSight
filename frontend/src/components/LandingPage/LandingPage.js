@@ -1,3 +1,5 @@
+/* Contributor(s): Low Yi San, Nadhirah Binti Ayub Khan, Michelle Magdelene Trisoeranto */
+
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import BusinessCard from '../BusinessCard/BusinessCard';

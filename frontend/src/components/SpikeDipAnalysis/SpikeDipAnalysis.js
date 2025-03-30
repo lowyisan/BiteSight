@@ -1,3 +1,5 @@
+/* Contributor(s): Low Yi San */
+
 import React, { useMemo } from 'react';
 import './SpikeDipAnalysis.css';
 

@@ -1,3 +1,5 @@
+/* Contributor(s): Low Yi San */
+
 import React, { useState, useEffect } from 'react';
 import BusinessCard from '../BusinessCard/BusinessCard';
 import AnalysisGraph from './AnalysisGraph';

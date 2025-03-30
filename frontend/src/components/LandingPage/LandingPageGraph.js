@@ -1,3 +1,5 @@
+/* Contributor(s): Low Yi San, Nadhirah Binti Ayub Khan, Michelle Magdelene Trisoeranto */
+
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import {

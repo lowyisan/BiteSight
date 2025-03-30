@@ -1,3 +1,5 @@
+/* Contributor(s): Low Yi San */
+
 import React, { useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
