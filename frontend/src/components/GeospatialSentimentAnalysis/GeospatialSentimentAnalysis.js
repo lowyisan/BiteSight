@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import STATE_CODE_TO_NAME from './stateCodeMap.json';
 
 function GeospatialSentimentAnalysis() {
   const [allData, setAllData] = useState([]);
@@ -11,12 +12,7 @@ function GeospatialSentimentAnalysis() {
   const [zoomLevel, setZoomLevel] = useState(4);
   const [selectedState, setSelectedState] = useState("");
   const [geoJsonData, setGeoJsonData] = useState(null);
-
-  const validStates = [
-    "Arizona", "California", "Delaware", "Florida", "Idaho", "Illinois",
-    "Indiana", "Louisiana", "Missouri", "Nevada", "New Jersey",
-    "Pennsylvania", "Tennessee",
-  ];
+  const [validStates, setValidStates] = useState([]);
 
   const applyFilter = (type) => {
     let filtered = allData;
@@ -27,12 +23,15 @@ function GeospatialSentimentAnalysis() {
   };
 
   useEffect(() => {
-    fetch("/geospatial-sentiment.json")
+    fetch("/geospatial_sentiment.json")
       .then((res) => res.json())
       .then((data) => {
         setAllData(data);
         setFilteredData(data);
+        const uniqueStates = [...new Set(data.map((d) => STATE_CODE_TO_NAME[d.state]).filter(Boolean))];
+        setValidStates(uniqueStates);
       });
+
     fetch("/gz_2010_us_040_00_500k.json")
       .then((res) => res.json())
       .then((data) => setGeoJsonData(data));
