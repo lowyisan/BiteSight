@@ -1,3 +1,5 @@
+// Contributor(s): Michelle Magdalene Trisoeranto
+
 import React, { useEffect, useState } from 'react';
 import {
   Bar,

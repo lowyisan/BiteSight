@@ -1,3 +1,5 @@
+// Contributor(s): Michelle Magdalene Trisoeranto
+
 import React, { useState, useEffect } from 'react';
 import CityBasedInsights from './CityBasedInsights';
 import { extractFoodCategories } from '../../utils/categoryUtils';

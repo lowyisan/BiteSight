@@ -1,3 +1,5 @@
+// Contributor(s): Michelle Magdalene Trisoeranto
+
 export function extractFoodCategories(businesses) {
     const allCategories = businesses
       .flatMap(b => b.categories?.split(',').map(cat => cat.trim().toLowerCase()) || []);

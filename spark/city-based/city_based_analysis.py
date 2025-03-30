@@ -1,3 +1,5 @@
+# Contributor(s): Michelle Magdalene Trisoeranto
+
 import os
 import json
 from pyspark.sql import SparkSession
