@@ -288,4 +288,4 @@ def main(input_path, output_dir):
         spark.stop()
 
 if __name__ == "__main__":
-    main("../dataset/small-raw-r-00000", "output")
+    main("hdfs:///input/dataset/small-r-00000", "hdfs:///output/analysis/time-based")

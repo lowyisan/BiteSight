@@ -11,7 +11,8 @@ from pyspark.sql.types import MapType, StringType, IntegerType
 
 # ==== FILE PATHS ====
 raw_dataset = "hdfs:///input/dataset/small-aggregated-r-00000"
-output_dir = "hdfs:///output/city-based"
+output_dir = "hdfs:///output/analysis/city-based"
+
 
 output_files = {
     "top_categories_per_city.json": f"{output_dir}/top_categories_per_city.json",
@@ -174,5 +175,3 @@ save_to_hdfs_json(avg_hours, output_files["avg_business_hours.json"])
 save_to_hdfs_json(hotspot, output_files["hotspot_cities_per_category.json"])
 save_to_hdfs_json(business_details, output_files["business_details.json"])
 
-
-spark.stop()

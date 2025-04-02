@@ -12,8 +12,8 @@ from pyspark.sql.functions import col, lit, round
 # === File Paths ===
 input_file_path = 'hdfs:///input/dataset/small-aggregated-r-00000'
 intermediate_csv_path = 'output.csv'
-final_csv_path = 'hdfs:///output/geospatial/business_sentiment.csv'
-json_output_path = '/home/hadoop/geospatial_sentiment.json'
+final_csv_path = 'hdfs:///output/analysis/geospatial/business_sentiment.csv'
+json_output_path = 'hdfs:///output/analysis/geospatial_sentiment.json'
 
 # === STEP 1: Convert MapReduce Output to CSV ===
 with open(input_file_path, 'r', encoding='utf-8-sig') as infile, open(intermediate_csv_path, 'w', newline='', encoding='utf-8-sig') as outfile:

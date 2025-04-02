@@ -95,8 +95,8 @@ def main():
     )
     
     try:
-        input_file = "../dataset/small-raw-r-00000"
-        output_directory = "output"
+        input_file = "hdfs:///input/dataset/small-raw-r-00000"
+        output_directory = "hdfs:///output/analysis/summary"
         
         calculate_summary_kpis(spark, input_file, output_directory)
     
