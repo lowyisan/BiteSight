@@ -29,12 +29,8 @@ nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
 
-# Spark Functions and Processing   #
-
 def prepare_spark_session():
-    """
-    Initialize Spark session with appropriate configurations.
-    """
+    """Initialize Spark session with appropriate configurations."""
     return (SparkSession.builder
             .appName("Yelp Business Rating Trend Analysis with Spikes & Dips")
             .config("spark.sql.adaptive.enabled", "true")
@@ -43,11 +39,7 @@ def prepare_spark_session():
             .getOrCreate())
 
 def create_yelp_schema():
-    """
-    Create a custom schema for the new Yelp dataset:
-    business_ID, business_name, address, city, state, postal,
-    lat, lon, categories, opening_hours, stars, review_text, datetime
-    """
+    """Create schema for Yelp dataset."""
     return StructType([
         StructField("business_ID", StringType(), True),
         StructField("business_name", StringType(), True),
@@ -64,11 +56,27 @@ def create_yelp_schema():
         StructField("datetime", StringType(), True)
     ])
 
+def validate_hdfs_path(spark, path):
+    """Validate that an HDFS path exists."""
+    if path.startswith("hdfs://"):
+        hadoop_conf = spark._jsc.hadoopConfiguration()
+        fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+        if not fs.exists(spark._jvm.org.apache.hadoop.fs.Path(path)):
+            raise FileNotFoundError(f"Path not found: {path}")
+
+def ensure_output_dir(spark, output_dir):
+    """Ensure output directory exists (works for both local and HDFS)."""
+    if output_dir.startswith("hdfs://"):
+        hadoop_conf = spark._jsc.hadoopConfiguration()
+        fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+        fs.mkdirs(spark._jvm.org.apache.hadoop.fs.Path(output_dir))
+    else:
+        os.makedirs(output_dir, exist_ok=True)
+
 def load_and_preprocess_data(spark, input_path):
-    """
-    Load and preprocess Yelp business reviews data using the new dataset schema.
-    Converts the datetime string to a timestamp and extracts year, month, and quarter.
-    """
+    """Load and preprocess data with path validation."""
+    validate_hdfs_path(spark, input_path)
+    
     schema = create_yelp_schema()
     df = (spark.read
           .format("csv")
@@ -76,141 +84,76 @@ def load_and_preprocess_data(spark, input_path):
           .option("header", "false")
           .schema(schema)
           .load(input_path)
-          # Convert datetime string to timestamp (adjust format if necessary)
           .withColumn("review_timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
           .withColumn("year", year(col("review_timestamp")).cast("integer"))
           .withColumn("month", month(col("review_timestamp")).cast("integer"))
           .withColumn("quarter", quarter(col("review_timestamp")))
           .withColumn("formatted_review_date", date_format(col("review_timestamp"), "yyyy-MM-dd HH:mm:ss"))
-          .na.drop(subset=["business_ID", "stars", "datetime"])
-         )
+          .na.drop(subset=["business_ID", "stars", "datetime"]))
     return df
 
 def compute_monthly_trends(df):
-    """
-    Return a DataFrame with columns:
-    business_ID, business_name, address, city, state, postal, year, month,
-    monthly_avg_rating, monthly_rating_std, review_volume
-    """
-    monthly_base = (
-        df.groupBy(
-            "business_ID", "business_name", "address", "city", "state", "postal", "year", "month"
-        )
-        .agg(
-            round(avg("stars"), 2).alias("monthly_avg_rating"),
-            coalesce(round(stddev("stars"), 2), lit(0.0)).alias("monthly_rating_std"),
-            count("*").alias("review_volume")
-        )
-    )
-    return monthly_base
+    """Compute monthly trends."""
+    return (df.groupBy("business_ID", "business_name", "address", "city", "state", "postal", "year", "month")
+            .agg(round(avg("stars"), 2).alias("monthly_avg_rating"),
+                   coalesce(round(stddev("stars"), 2), lit(0.0)).alias("monthly_rating_std"),
+                   count("*").alias("review_volume")))
 
-def analyze_business_trends(df, output_dir):
-    """
-    Compute and export business-specific time-based trends (monthly and quarterly).
-    """
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Quarterly Trends: grouping by business_ID, business_name, city, state, postal, year, quarter
-    business_quarterly_trends = (df
-        .groupBy(
-            col("business_ID"),
-            col("business_name"),
-            col("city"),
-            col("state"),
-            col("postal"),
-            col("year"),
-            quarter("review_timestamp").alias("quarter")
-        )
-        .agg(
-            round(avg("stars"), 2).alias("avg_quarterly_rating"),
-            count("*").alias("total_reviews"),
-            coalesce(round(stddev("stars"), 2), lit(0.0)).alias("rating_volatility")
-        )
-    )
-
-    # Monthly Trends
-    business_monthly_trends = (df
-        .groupBy(
-            col("business_ID"),
-            col("business_name"),
-            col("address"),
-            col("city"),
-            col("state"),
-            col("postal"),
-            col("year"),
-            col("month")
-        )
-        .agg(
-            round(avg("stars"), 2).alias("monthly_avg_rating"),
-            coalesce(round(stddev("stars"), 2), lit(0.0)).alias("monthly_rating_std"),
-            count("*").alias("review_volume")
-        )
-    )
-
-    # Convert to Pandas and export JSON reports
-    business_quarterly_report = business_quarterly_trends.toPandas().fillna(0)
-    business_monthly_report = business_monthly_trends.toPandas().fillna(0)
-
-    quarterly_output_path = os.path.join(output_dir, 'business_quarterly_trends.json')
-    monthly_output_path = os.path.join(output_dir, 'business_monthly_trends.json')
-
-    with open(quarterly_output_path, 'w') as f:
-        json.dump(business_quarterly_report.to_dict(orient="records"), f, indent=2)
-    with open(monthly_output_path, 'w') as f:
-        json.dump(business_monthly_report.to_dict(orient="records"), f, indent=2)
-
-    print(f"Business trend analysis reports saved to: {output_dir}")
-    return {
-        "quarterly_trends": business_quarterly_report.to_dict(orient="records"),
-        "monthly_trends": business_monthly_report.to_dict(orient="records")
-    }
+def analyze_business_trends(spark, df, output_dir):
+    """Analyze and save business trends."""
+    ensure_output_dir(spark, output_dir)
+    
+    # Quarterly analysis
+    quarterly_trends = (df.groupBy("business_ID", "business_name", "city", "state", "postal", "year", "quarter")
+                        .agg(round(avg("stars"), 2).alias("avg_quarterly_rating"),
+                               count("*").alias("total_reviews"),
+                               coalesce(round(stddev("stars"), 2), lit(0.0)).alias("rating_volatility")))
+    
+    # Monthly analysis
+    monthly_trends = (df.groupBy("business_ID", "business_name", "address", "city", "state", "postal", "year", "month")
+                      .agg(round(avg("stars"), 2).alias("monthly_avg_rating"),
+                             coalesce(round(stddev("stars"), 2), lit(0.0)).alias("monthly_rating_std"),
+                             count("*").alias("review_volume")))
+    
+    # Save results
+    if output_dir.startswith("hdfs://"):
+        # For HDFS output
+        quarterly_trends.write.mode("overwrite").json(os.path.join(output_dir, "quarterly_trends"))
+        monthly_trends.write.mode("overwrite").json(os.path.join(output_dir, "monthly_trends"))
+    else:
+        # For local output
+        quarterly_trends.toPandas().to_json(os.path.join(output_dir, "business_quarterly_trends.json"), orient="records", indent=2)
+        monthly_trends.toPandas().to_json(os.path.join(output_dir, "business_monthly_trends.json"), orient="records", indent=2)
+    
+    print(f"Business trend analysis saved to: {output_dir}")
 
 def detect_spikes_and_dips(monthly_base, threshold=1.0):
-    """
-    For each business, compare monthly_avg_rating with previous month.
-    Returns a DataFrame with columns:
-      business_ID, business_name, year, month, monthly_avg_rating, prev_avg_rating, rating_diff, spike_or_dip
-    """
+    """Detect significant rating changes."""
     w = Window.partitionBy("business_ID").orderBy("year", "month")
-    df_with_prev = monthly_base.withColumn("prev_avg_rating", lag("monthly_avg_rating").over(w))
-    df_with_diff = df_with_prev.withColumn("rating_diff", col("monthly_avg_rating") - col("prev_avg_rating"))
-    df_flagged = df_with_diff.withColumn(
-        "spike_or_dip",
-        when(col("rating_diff") > threshold, lit("spike"))
-        .when(col("rating_diff") < -threshold, lit("dip"))
-        .otherwise(lit(None))
-    )
-    df_flagged = df_flagged.filter(col("spike_or_dip").isNotNull())
-    return df_flagged
-
-#####################################
-# Topic Modeling Functions
-#####################################
+    return (monthly_base
+            .withColumn("prev_avg_rating", lag("monthly_avg_rating").over(w))
+            .withColumn("rating_diff", col("monthly_avg_rating") - col("prev_avg_rating"))
+            .withColumn("spike_or_dip",
+                       when(col("rating_diff") > threshold, "spike")
+                       .when(col("rating_diff") < -threshold, "dip")
+                       .otherwise(None))
+            .filter(col("spike_or_dip").isNotNull()))
 
 def preprocess_reviews(review_texts):
-    """
-    Preprocess review texts: lowercase, remove non-alphabetic characters,
-    tokenize, and remove stopwords.
-    """
-    processed = []
-    for review in review_texts:
-        text = review.lower()
-        text = re.sub(r'[^a-z\s]', '', text)
-        tokens = text.split()
-        tokens = [token for token in tokens if token not in stop_words]
-        processed.append(tokens)
-    return processed
+    """Preprocess review text for topic modeling."""
+    return [[token for token in 
+             re.sub(r'[^a-z\s]', '', text.lower()).split() 
+             if token not in stop_words and len(token) > 2] 
+            for text in review_texts]
 
 def run_topic_modeling(review_texts, num_topics=3):
-    """
-    Run LDA topic modeling on a list of review texts using Gensim.
-    Returns a list of topics with their top words.
-    """
+    """Perform LDA topic modeling."""
     texts = preprocess_reviews(review_texts)
+    if not texts or all(not text for text in texts):
+        return []
+    
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
-    if len(dictionary) == 0:
-        return []
     lda_model = gensim.models.LdaModel(
         corpus=corpus, 
         id2word=dictionary, 
@@ -218,69 +161,101 @@ def run_topic_modeling(review_texts, num_topics=3):
         random_state=100, 
         passes=10
     )
-    topics = lda_model.print_topics(num_topics=num_topics, num_words=5)
-    return [topic_str for idx, topic_str in topics]
+    return [topic_str for _, topic_str in lda_model.print_topics(num_topics=num_topics, num_words=5)]
+
+# def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
+#     """Analyze and save topic modeling results."""
+#     ensure_output_dir(spark, output_dir)
+#     results = []
+    
+#     for row in flagged_df.collect():
+#         reviews = (df.filter((col("business_ID") == row["business_ID"]) &
+#                              (col("year") == row["year"]) &
+#                              (col("month") == row["month"]))
+#                   .select("review_text")
+#                   .rdd.flatMap(lambda x: x)
+#                   .collect())
+        
+#         results.append({
+#             "business_ID": row["business_ID"],
+#             "business_name": row["business_name"],
+#             "year": row["year"],
+#             "month": row["month"],
+#             "monthly_avg_rating": row["monthly_avg_rating"],
+#             "prev_avg_rating": row["prev_avg_rating"],
+#             "rating_diff": row["rating_diff"],
+#             "spike_or_dip": row["spike_or_dip"],
+#             "topics": run_topic_modeling(reviews) if reviews else []
+#         })
+    
+#     output_path = os.path.join(output_dir, "spike_dip_topic_modeling.json")
+#     if output_dir.startswith("hdfs://"):
+#         # For HDFS output
+#         spark.createDataFrame(results).write.mode("overwrite").json(output_path)
+#     else:
+#         # For local output
+#         with open(output_path, "w") as f:
+#             json.dump(results, f, indent=2)
+    
+#     print(f"Topic modeling results saved to: {output_path}")
 
 def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
-    """
-    For each flagged row (spike or dip), gather review_texts for that business, year, and month,
-    run topic modeling, and export the results as JSON.
-    """
-    flagged_pd = flagged_df.toPandas()
+    """Analyze and save topic modeling results for spikes/dips."""
+    ensure_output_dir(spark, output_dir)
     results = []
-    for _, row in flagged_pd.iterrows():
-        biz_id = row["business_ID"]
-        year_ = row["year"]
-        month_ = row["month"]
-        spike_or_dip = row["spike_or_dip"]
-        rating_diff = row["rating_diff"]
-        monthly_avg = row["monthly_avg_rating"]
-        prev_avg = row["prev_avg_rating"]
-        biz_name = row["business_name"]
-        reviews_sdf = df.filter(
-            (col("business_ID") == biz_id) &
-            (col("year") == year_) &
-            (col("month") == month_)
-        )
-        reviews = reviews_sdf.select("review_text").rdd.flatMap(lambda x: x).collect()
-        if len(reviews) > 0:
-            topics = run_topic_modeling(reviews, num_topics=3)
-        else:
-            topics = []
-        results.append({
-            "business_ID": biz_id,
-            "business_name": biz_name,
-            "year": int(year_),
-            "month": int(month_),
-            "monthly_avg_rating": float(monthly_avg) if monthly_avg else None,
-            "prev_avg_rating": float(prev_avg) if prev_avg else None,
-            "rating_diff": float(rating_diff) if rating_diff else None,
-            "spike_or_dip": spike_or_dip,
-            "topics": topics
-        })
-    spike_dip_output_path = os.path.join(output_dir, "spike_dip_topic_modeling.json")
-    with open(spike_dip_output_path, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"Spike/Dip topic modeling results saved to: {spike_dip_output_path}")
 
+    for row in flagged_df.collect():
+        reviews = (df.filter((col("business_ID") == row["business_ID"]) &
+                             (col("year") == row["year"]) &
+                             (col("month") == row["month"]))
+                  .select("review_text")
+                  .rdd.flatMap(lambda x: x)
+                  .collect())
+
+        results.append({
+            "business_ID": row["business_ID"],
+            "business_name": row["business_name"],
+            "year": row["year"],
+            "month": row["month"],
+            "monthly_avg_rating": row["monthly_avg_rating"],
+            "prev_avg_rating": row["prev_avg_rating"],
+            "rating_diff": row["rating_diff"],
+            "spike_or_dip": row["spike_or_dip"],
+            "topics": run_topic_modeling(reviews) if reviews else []
+        })
+
+    output_path = os.path.join(output_dir, "spike_dip_topic_modeling.json")
+
+    if results:
+        # Only write if we have results
+        spark.createDataFrame(results).write.mode("overwrite").json(output_path)
+        print(f"Topic modeling results saved to: {output_path}")
+    else:
+        print("No spike or dip data found. Skipping topic modeling JSON write.")
 
 def main(input_path, output_dir):
+    """Main execution function."""
     spark = prepare_spark_session()
-    # Load and preprocess data
-    reviews_df = load_and_preprocess_data(spark, input_path)
     
-    # Compute monthly trends
-    monthly_base = compute_monthly_trends(reviews_df)
-    
-    # Detect spikes and dips
-    flagged_df = detect_spikes_and_dips(monthly_base, threshold=1.0)
-    
-    # Run topic modeling for flagged months and export results
-    analyze_spikes_dips_topic_modeling(spark, reviews_df, flagged_df, output_dir)
-    
-    # Also run and export business trends (monthly and quarterly)
-    analyze_business_trends(reviews_df, output_dir)
-
+    try:
+        # Load and preprocess data
+        reviews_df = load_and_preprocess_data(spark, input_path)
+        
+        # Compute trends and detect anomalies
+        monthly_base = compute_monthly_trends(reviews_df)
+        flagged_df = detect_spikes_and_dips(monthly_base)
+        
+        # Run analyses
+        analyze_business_trends(spark, reviews_df, output_dir)
+        analyze_spikes_dips_topic_modeling(spark, reviews_df, flagged_df, 
+                                         os.path.join(output_dir, "topic_modeling"))
+        
+    except Exception as e:
+        print(f"Error in time-based analysis: {str(e)}")
+        traceback.print_exc()
+        raise
+    finally:
+        spark.stop()
 
 if __name__ == "__main__":
-    main("hdfs:///input/dataset/small-r-00000", "hdfs:///output/analysis/time-based")
+    main("hdfs:///input/dataset/small-raw-r-00000", "hdfs:///output/analysis/time-based")
