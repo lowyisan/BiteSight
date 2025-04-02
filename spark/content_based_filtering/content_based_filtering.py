@@ -1,4 +1,4 @@
-# Contributor(s): Nadhirah Binti Ayub Khan
+# Contributor(s): Nadhirah Binti Ayub Khan, updated by ChatGPT
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, first, row_number, collect_list, struct, concat_ws
@@ -6,17 +6,40 @@ from pyspark.sql.types import DoubleType
 from pyspark.sql.window import Window
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, Word2Vec
 
+from pyspark.ml.linalg import Vectors, VectorUDT
+from pyspark.sql.functions import udf
+import numpy as np
+
 # ==== FILE PATHS ====
 input_path = "hdfs:///input/dataset/small-raw-r-00000"
-output_path = "hdfs:///output/analysis/content-based/top5_similar_businesses.json"
+output_file = "hdfs:///output/analysis/content-based/top5_similar_businesses.json"
+
+def save_as_named_json(df, output_path):
+    # Write to a temp path
+    temp_path = output_path + "_tmp"
+    df.coalesce(1).write.mode("overwrite").json(temp_path)
+
+    # Rename part file to desired file name
+    spark = SparkSession.getActiveSession()
+    hadoop_conf = spark._jsc.hadoopConfiguration()
+    fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+
+    temp_path_obj = spark._jvm.org.apache.hadoop.fs.Path(temp_path)
+    final_path_obj = spark._jvm.org.apache.hadoop.fs.Path(output_path)
+
+    for file_status in fs.listStatus(temp_path_obj):
+        name = file_status.getPath().getName()
+        if name.startswith("part-") and name.endswith(".json"):
+            fs.rename(file_status.getPath(), final_path_obj)
+
+    fs.delete(temp_path_obj, True)
+    print(f"Written to HDFS: {output_path}")
 
 def main():
-    # 1. Start Spark Session
     spark = SparkSession.builder \
         .appName("MLBasedContentRecommender") \
         .getOrCreate()
 
-    # 2. Load dataset with updated schema
     raw_columns = [
         "business_id", "name", "address", "city", "state", "postal",
         "lat", "lon", "categories", "opening_hours", "stars", "review_text", "datetime"
@@ -32,17 +55,14 @@ def main():
         .toDF(*raw_columns)
     )
 
-    # 3. Combine categories + review text
     raw_df = raw_df.withColumn("combined_text", concat_ws(" ", col("categories"), col("review_text")))
 
-    # 4. Preprocessing: Tokenize + Remove Stop Words
     tokenizer = Tokenizer(inputCol="combined_text", outputCol="words")
     tokenized_df = tokenizer.transform(raw_df)
 
     remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
     filtered_df = remover.transform(tokenized_df)
 
-    # 5. Train Word2Vec on combined text
     word2Vec = Word2Vec(
         vectorSize=100,
         minCount=2,
@@ -53,7 +73,6 @@ def main():
     model = word2Vec.fit(filtered_df)
     vector_df = model.transform(filtered_df)
 
-    # 6. Aggregate Vectors Per Business
     business_profiles = (
         vector_df.groupBy("business_id")
         .agg(
@@ -64,11 +83,6 @@ def main():
         )
     )
 
-    # Compute average vector per business
-    from pyspark.ml.linalg import Vectors, VectorUDT
-    import numpy as np
-    from pyspark.sql.functions import udf
-
     def avg_vector(vecs):
         if not vecs:
             return Vectors.dense([0.0]*100)
@@ -77,12 +91,8 @@ def main():
         return Vectors.dense(avg.tolist())
 
     avg_vector_udf = udf(avg_vector, VectorUDT())
+    business_profiles = business_profiles.withColumn("profile_vector", avg_vector_udf(col("feature_vectors"))).drop("feature_vectors")
 
-    business_profiles = business_profiles.withColumn(
-        "profile_vector", avg_vector_udf(col("feature_vectors"))
-    ).drop("feature_vectors")
-
-    # 7. Cross Join for Cosine Similarity (within same city)
     a = business_profiles.alias("a")
     b = business_profiles.alias("b")
 
@@ -105,7 +115,6 @@ def main():
         cosine_udf(col("a.profile_vector"), col("b.profile_vector"))
     )
 
-    # 8. Top 5 Similar Businesses Per Business
     windowSpec = Window.partitionBy("a.business_id").orderBy(col("similarity").desc())
 
     top_n = (
@@ -121,7 +130,6 @@ def main():
         )
     )
 
-    # 9. Group recommendations and save to S3
     grouped_df = top_n.groupBy("business_id", "name", "city").agg(
         collect_list(
             struct(
@@ -132,9 +140,7 @@ def main():
         ).alias("recommendations")
     )
 
-    grouped_df.write.mode("overwrite").json(output_path)
-
-    print("ML-based recommendations saved at: {output_path}")
+    save_as_named_json(grouped_df, output_file)
 
 if __name__ == "__main__":
     main()

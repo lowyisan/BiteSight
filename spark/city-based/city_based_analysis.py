@@ -9,7 +9,7 @@ from pyspark.sql.types import MapType, StringType, IntegerType
 
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-def write_as_single_json_file(df, hdfs_path):
+def write_as_single_json_file(spark, df, hdfs_path):
     """Write DataFrame as a single .json file with actual filename."""
     temp_path = hdfs_path + "_tmp"
     df.coalesce(1).write.mode("overwrite").json(temp_path)
@@ -55,7 +55,7 @@ def main(spark):
         .agg(count("*").alias("business_count"))
         .orderBy("state", "city", desc("business_count"))
     )
-    write_as_single_json_file(top_categories, f"{output_dir}/top_categories_per_city.json")
+    write_as_single_json_file(spark, top_categories, f"{output_dir}/top_categories_per_city.json")
 
     # ===== Average Business Hours per City =====
     opening_hours_schema = MapType(StringType(), StringType())
@@ -75,7 +75,7 @@ def main(spark):
         hours_per_business.groupBy("state", "city")
         .agg(avg("days_open").alias("avg_days_open_per_business"))
     )
-    write_as_single_json_file(avg_hours, f"{output_dir}/avg_business_hours.json")
+    write_as_single_json_file(spark, avg_hours, f"{output_dir}/avg_business_hours.json")
 
     # ===== Hotspot Cities per Category =====
     hotspot = (
@@ -91,7 +91,7 @@ def main(spark):
         )
         .orderBy("category", desc("total_reviews"))
     )
-    write_as_single_json_file(hotspot, f"{output_dir}/hotspot_cities_per_category.json")
+    write_as_single_json_file(spark, hotspot, f"{output_dir}/hotspot_cities_per_category.json")
 
     # ===== Business Details =====
     df = df.withColumn("avg_rating", spark_round(
@@ -127,7 +127,7 @@ def main(spark):
         col("postal").alias("postal_code"),
         "hours"
     )
-    write_as_single_json_file(business_details, f"{output_dir}/business_details.json")
+    write_as_single_json_file(spark, business_details, f"{output_dir}/business_details.json")
 
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("CityBasedAnalysis").getOrCreate()

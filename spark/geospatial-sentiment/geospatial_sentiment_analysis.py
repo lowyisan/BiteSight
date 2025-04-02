@@ -1,15 +1,11 @@
 # Contributor(s): Kee Han Xiang
 
+import os
 import json
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, round
+from py4j.java_gateway import java_import
 
 def process_sentiment_analysis(df):
-    """
-    Given a Spark DataFrame with review counts per star,
-    this function calculates negative, neutral, and positive review counts,
-    sentiment score, and average star rating.
-    """
     df_with_sentiment = df.withColumn("negative_count", col("0star") + col("1star") + col("2star")) \
         .withColumn("neutral_count", col("3star")) \
         .withColumn("positive_count", col("4star") + col("5star")) \
@@ -27,12 +23,7 @@ def process_sentiment_analysis(df):
         "sentiment_score", "avg_star_rating"
     )
 
-
 def convert_to_json_format(df_spark):
-    """
-    Converts the final Spark DataFrame into a JSON array structure.
-    Returns a Python list of dictionaries.
-    """
     df_local = df_spark.select(
         "name", "lat", "lon", "sentiment_score", "address", "state",
         "postal", "avg_star_rating", "categories", "opening_hours"
@@ -55,47 +46,59 @@ def convert_to_json_format(df_spark):
 
     return json_data
 
+def save_as_named_json(spark, data, hdfs_path):
+    from pyspark.sql import Row
+    from pyspark.sql import DataFrame
+
+    # Convert list of dicts to a DataFrame directly
+    rdd = spark.sparkContext.parallelize(data)
+    df = spark.read.json(rdd)
+
+    # Write to temp directory
+    temp_path = hdfs_path + "_tmp"
+    df.coalesce(1).write.mode("overwrite").json(temp_path)
+
+    # Rename part file to desired file name
+    hadoop_conf = spark._jsc.hadoopConfiguration()
+    fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+    java_import(spark._jvm, 'org.apache.hadoop.fs.Path')
+    temp_path_obj = spark._jvm.Path(temp_path)
+    final_path_obj = spark._jvm.Path(hdfs_path)
+
+    for file_status in fs.listStatus(temp_path_obj):
+        name = file_status.getPath().getName()
+        if name.startswith("part-") and name.endswith(".json"):
+            fs.rename(file_status.getPath(), final_path_obj)
+
+    fs.delete(temp_path_obj, True)
+    print(f"HDFS JSON written to: {hdfs_path}")
 
 def main(spark):
-    # === Paths ===
     hdfs_input_path = 'hdfs:///input/dataset/small-aggregated-r-00000'
-    hdfs_output_csv_path = 'hdfs:///output/analysis/geospatial/business_sentiment'
-    local_json_output_path = './output/geospatial_sentiment.json'  # For frontend use or download
+    hdfs_output_json_path = 'hdfs:///output/analysis/geospatial/geospatial_sentiment.json'
+    local_json_output_path = './output/geospatial_sentiment.json'
 
-    # === STEP 1: Load data from HDFS ===
-    df = spark.read.csv(hdfs_input_path, sep="\t", header=False)
-
-    df = df.toDF(
+    df = spark.read.csv(hdfs_input_path, sep="\t", header=False).toDF(
         "business_id", "name", "address", "city", "state", "postal",
         "lat", "lon", "categories", "opening_hours",
         "0star", "1star", "2star", "3star", "4star", "5star", "totalreview"
     )
 
-    # === STEP 2: Compute sentiment score & average rating ===
     enriched_df = process_sentiment_analysis(df)
-
-    # === STEP 3: Save enriched DataFrame to HDFS CSV ===
-    enriched_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(hdfs_output_csv_path)
-    print(f"CSV written to: {hdfs_output_csv_path}")
-
-    # === STEP 4: Convert to frontend-friendly JSON (LOCAL) ===
     json_data = convert_to_json_format(enriched_df)
 
-    # Save to local file system for use in frontend
-    import os
+    # Save to local (frontend use)
     os.makedirs("./output", exist_ok=True)
-
     with open(local_json_output_path, "w", encoding="utf-8") as f:
         json.dump(json_data, f, indent=2, ensure_ascii=False)
-
     print(f"Local JSON written to: {local_json_output_path}")
 
+    # Save to HDFS
+    save_as_named_json(spark, json_data, hdfs_output_json_path)
 
+# NO spark session creation here – only use when run standalone
 if __name__ == "__main__":
-    spark = SparkSession.builder \
-        .appName("GeospatialSentimentAnalysis") \
-        .config("spark.driver.memory", "4g") \
-        .getOrCreate()
-
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder.getOrCreate()
     main(spark)
     spark.stop()

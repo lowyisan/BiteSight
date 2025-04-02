@@ -24,7 +24,7 @@ def run_summary_kpis(spark):
 
 def run_time_trend_topic_modeling(spark):
     import time_based_analysis
-    time_based_analysis.main("hdfs:///input/dataset/small-raw-r-00000", "hdfs:///output/analysis/time-based")
+    time_based_analysis.main(spark, "hdfs:///input/dataset/small-raw-r-00000", "hdfs:///output/analysis/time-based")
 
 def main():
     spark = SparkSession.builder.appName("Unified Yelp Analysis Pipeline").config("spark.driver.memory", "4g").config("spark.executor.memory", "4g").getOrCreate()

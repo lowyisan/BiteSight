@@ -1,15 +1,12 @@
 import os
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, count, avg
-from pyspark.sql.types import StructType, StructField, StringType, FloatType, DoubleType
+import json
 import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import avg
+from pyspark.sql.types import StructType, StructField, StringType, FloatType, DoubleType
+from py4j.java_gateway import java_import
 
 def create_yelp_schema():
-    """
-    Create a custom schema for the new Yelp dataset:
-    business_id, name, address, city, state, postal,
-    lat, lon, categories, opening_hours, stars, review_text, datetime
-    """
     return StructType([
         StructField("business_id", StringType(), True),
         StructField("name", StringType(), True),
@@ -26,36 +23,41 @@ def create_yelp_schema():
         StructField("datetime", StringType(), True)
     ])
 
+def save_summary_as_single_json(spark, summary_df, hdfs_output_dir, filename):
+    """Save summary KPIs as a single JSON file to HDFS."""
+    java_import(spark._jvm, 'org.apache.hadoop.fs.Path')
+    json_list = summary_df.to_dict(orient="records")
+    tmp_path = f"{hdfs_output_dir}/.tmp_{filename}"
+    final_path = f"{hdfs_output_dir}/{filename}"
+
+    df = spark.createDataFrame(json_list)
+    df.coalesce(1).write.mode("overwrite").json(tmp_path)
+
+    # Rename part file to actual file name
+    hadoop_conf = spark._jsc.hadoopConfiguration()
+    fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+    java_import(spark._jvm, 'org.apache.hadoop.fs.Path')
+    tmp_dir = spark._jvm.Path(tmp_path)
+    target_path = spark._jvm.Path(final_path)
+
+    for file_status in fs.listStatus(tmp_dir):
+        name = file_status.getPath().getName()
+        if name.startswith("part-") and name.endswith(".json"):
+            fs.rename(file_status.getPath(), target_path)
+            break
+
+    fs.delete(tmp_dir, True)
+    print(f"[HDFS] Written: {final_path}")
+
 def calculate_summary_kpis(spark, file_path, output_dir):
-    """
-    Calculate summary KPIs and export to CSV
+    df = spark.read.csv(file_path, schema=create_yelp_schema(), header=False, sep="\t")
     
-    Parameters:
-    spark (SparkSession): Active Spark session
-    file_path (str): Input data file path
-    output_dir (str): Directory to save output CSV
-    """
-    # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Read TSV with the new schema
-    df = spark.read.csv(
-        file_path, 
-        schema=create_yelp_schema(),
-        header=False,  # Assuming no header in the file
-        sep='\t'       # Tab-separated values
-    )
-    
-    # Calculate KPIs
     total_businesses = df.select("business_id").distinct().count()
     total_reviews = df.count()
     avg_rating = df.select(avg("stars")).first()[0]
-
-    # Also count number of distinct states and cities
     num_states = df.select("state").distinct().count()
     num_cities = df.select("city").distinct().count()
-    
-    # Create a pandas DataFrame for easy CSV export
+
     summary_df = pd.DataFrame({
         'metric': [
             'total_businesses', 
@@ -72,30 +74,15 @@ def calculate_summary_kpis(spark, file_path, output_dir):
             round(avg_rating, 2) if avg_rating is not None else 0
         ]
     })
-    
-    # Convert to CSV string
-    csv_str = summary_df.to_csv(index=False)
-    # Strip trailing newline so the file doesn't end with "\n"
-    csv_str = csv_str.rstrip('\n')
-    
-    # Write CSV string to file without a trailing newline
-    output_path = os.path.join(output_dir, 'yelp_summary_kpis.csv')
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(csv_str)
-    
-    print(f"Summary KPIs exported to: {output_path}")
-    
+
+    save_summary_as_single_json(spark, summary_df, output_dir, "yelp_summary_kpis.json")
     return summary_df
 
 def main():
-    # Initialize Spark Session
-    spark = (SparkSession.builder
-        .appName("YelpSummaryKPIsExport")
-        .getOrCreate()
-    )
+    spark = SparkSession.builder.appName("YelpSummaryKPIsExport").getOrCreate()
     input_file = "hdfs:///input/dataset/small-raw-r-00000"
-    output_directory = "output"
-    
+    output_directory = "hdfs:///output/analysis/summary"
+
     calculate_summary_kpis(spark, input_file, output_directory)
 
 if __name__ == "__main__":

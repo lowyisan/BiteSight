@@ -20,16 +20,20 @@ def save_single_json_file(spark, data_list, hdfs_output_path, filename):
     """
     Saves a single JSON file to a given HDFS path with a specific filename.
     """
+    # Convert list of dicts to DataFrame directly
     df = spark.createDataFrame(data_list)
-    tmp_path = f"{hdfs_output_path}/.tmp_{filename}"
-    df.coalesce(1).write.mode("overwrite").json(tmp_path)
 
-    # HDFS rename logic
+    temp_path = f"{hdfs_output_path}/.tmp_{filename}"
+    final_path = f"{hdfs_output_path}/{filename}"
+
+    df.coalesce(1).write.mode("overwrite").json(temp_path)
+
+    # Rename part file to desired file name
     hadoop_conf = spark._jsc.hadoopConfiguration()
     fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
     java_import(spark._jvm, 'org.apache.hadoop.fs.Path')
-    tmp_dir = spark._jvm.Path(tmp_path)
-    target_file = spark._jvm.Path(f"{hdfs_output_path}/{filename}")
+    tmp_dir = spark._jvm.Path(temp_path)
+    target_file = spark._jvm.Path(final_path)
 
     for file_status in fs.listStatus(tmp_dir):
         name = file_status.getPath().getName()
@@ -38,12 +42,13 @@ def save_single_json_file(spark, data_list, hdfs_output_path, filename):
             break
 
     fs.delete(tmp_dir, True)
-    print(f"[HDFS] Written: {hdfs_output_path}/{filename}")
+    print(f"[HDFS] Written: {final_path}")
 
 def main(spark):
-    df = spark.read.csv(input_path, sep='\t', header=False, inferSchema=True)
-    df = df.toDF("business_id", "name", "address", "city", "state", "postal", "lat", "lon",
-                 "categories", "opening_hours", "review_star", "review_text", "datetime")
+    df = spark.read.csv(input_path, sep='\t', header=False, inferSchema=True).toDF(
+        "business_id", "name", "address", "city", "state", "postal", "lat", "lon",
+        "categories", "opening_hours", "review_star", "review_text", "datetime"
+    )
 
     tokenizer = RegexTokenizer(inputCol="review_text", outputCol="words", pattern="\\W+")
     df = tokenizer.transform(df)
@@ -72,11 +77,10 @@ def main(spark):
     rate_category_udf = udf(rate_category, StringType())
     df = df.withColumn("rating_category", rate_category_udf(col("review_star")))
 
-    # Cache positive/negative reviews
+    # Cache and filter
     positive_reviews = df.filter(df.sentiment == "positive").cache().repartition(10)
     negative_reviews = df.filter(df.sentiment == "negative").cache().repartition(10)
 
-    # Word filtering
     stop_words = set(stopwords.words('english'))
     restaurant_words = set([
         "food", "restaurant", "service", "staff", "menu", "drink", "meal", "dish", "chef",
@@ -128,7 +132,7 @@ def main(spark):
     for key, val in rating_counts.items():
         summary[f"rating_category_{key}"] = str(val)
 
-    # === Write all JSONs to HDFS as single files ===
+    # === Write all JSONs to HDFS ===
     save_single_json_file(spark, wordcloud_data, output_folder, "word_frequencies.json")
     save_single_json_file(spark, top_pos, output_folder, "positive_wordcloud.json")
     save_single_json_file(spark, top_neg, output_folder, "negative_wordcloud.json")
