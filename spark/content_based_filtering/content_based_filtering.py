@@ -6,6 +6,10 @@ from pyspark.sql.types import DoubleType
 from pyspark.sql.window import Window
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, Word2Vec
 
+# ==== FILE PATHS ====
+input_path = "hdfs:///input/dataset/small-raw-r-00000"
+output_path = "hdfs:///output/analysis/content-based/top5_similar_businesses.json"
+
 def main():
     # 1. Start Spark Session
     spark = SparkSession.builder \
@@ -20,8 +24,7 @@ def main():
 
     raw_df = (
         spark.read.csv(
-            # "../dataset/small-raw-r-00000", 
-            "hdfs:///input/dataset/small-raw-r-00000",
+            input_path,
             sep="\t",
             header=False,
             inferSchema=True
@@ -129,13 +132,9 @@ def main():
         ).alias("recommendations")
     )
 
-    grouped_df.write.mode("overwrite").json(
-        # "output/top5_similar_businesses.json"
-        "hdfs:///output/content-based/top5_similar_businesses.json"
-    )
+    grouped_df.write.mode("overwrite").json(output_path)
 
-    print("ML-based recommendations saved at: output/top5_similar_businesses.json")
-    spark.stop()
+    print("ML-based recommendations saved at: {output_path}")
 
 if __name__ == "__main__":
     main()

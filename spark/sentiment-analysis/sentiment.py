@@ -19,7 +19,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load the TSV file (header=False because there are no headers)
-df = spark.read.csv("./spark/dataset/small-r-00000", sep='\t', header=False, inferSchema=True)
+df = spark.read.csv("hdfs:///input/dataset/small-r-00000", sep='\t', header=False, inferSchema=True)
 
 # Manually assign column names as per your dataset structure
 df = df.toDF("business_id", "name", "address", "city", "state", "postal", "lat", "lon", "categories", "opening_hours","stars", "review_text", "datetime")
@@ -127,7 +127,7 @@ top_50_negative = [{"word": word, "count": count} for word, count in sorted(nega
 sentiment_vs_star = df.select("sentiment", "rating_category").limit(50000).toPandas()
 
 # Define the output folder and file name for JSON
-output_folder = "./spark/sentiment-analysis/output/data"  # Folder called "output" in the current directory
+output_folder = "hdfs:///output/analysis/sentiment-analysis/data"  # Folder called "output" in the current directory
 output_wordcloud_json = "word_frequencies.json"  # File name for the output JSON
 output_sentiment_csv = "sentiment.csv"  # File name for the output CSV
 output_positive_wordcloud_json = "positive_wordcloud.json"
@@ -149,9 +149,6 @@ with open(os.path.join(output_folder, output_negative_wordcloud_json), 'w') as f
 
 # Save sentiment vs star rating comparison CSV
 sentiment_vs_star.to_csv(os.path.join(output_folder, output_sentiment_csv), index=False)
-
-# Stop the Spark session
-spark.stop()
 
 print(f"Word frequencies saved as JSON to '{output_folder}/{output_wordcloud_json}'.")
 print(f"Sentiment data saved as CSV to '{output_folder}/{output_sentiment_csv}'.")
