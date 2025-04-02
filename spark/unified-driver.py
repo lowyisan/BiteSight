@@ -18,7 +18,7 @@ def run_geospatial_sentiment(spark):
 
 def run_vader_sentiment_analysis(spark):
     import sentiment
-    sentiment.main()
+    sentiment.main(spark)
 
 def run_summary_kpis(spark):
     import summary_kpis

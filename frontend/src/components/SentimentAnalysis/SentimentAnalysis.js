@@ -20,6 +20,10 @@ const SentimentAnalysis = () => {
   const [wordFrequency, setWordFrequency] = useState([]);
   const [positiveWordCloudData, setPositiveWordCloudData] = useState([]);
   const [negativeWordCloudData, setNegativeWordCloudData] = useState([]);
+  const [summaryData, setSummaryData] = useState({
+    sentiment: { positive: 0, negative: 0, neutral: 0 },
+    rating: { positive: 0, negative: 0, neutral: 0 },
+  });
 
   // Load sentiment data (CSV for comparison between text and stars)
   useEffect(() => {
@@ -66,6 +70,28 @@ const SentimentAnalysis = () => {
         setNegativeWordCloudData(negativeCloudData);
       })
       .catch((error) => console.error('Error loading negative word cloud:', error));
+  }, []);
+
+  // Load sentiment + rating summary
+  useEffect(() => {
+    fetch('/sentiment_rating_summary.json')
+      .then((res) => res.json())
+      .then((json) => {
+        const summary = json[0];
+        setSummaryData({
+          sentiment: {
+            positive: parseInt(summary['sentiment_positive'] || 0),
+            negative: parseInt(summary['sentiment_negative'] || 0),
+            neutral: parseInt(summary['sentiment_neutral'] || 0),
+          },
+          rating: {
+            positive: parseInt(summary['rating_category_positive'] || 0),
+            negative: parseInt(summary['rating_category_negative'] || 0),
+            neutral: parseInt(summary['rating_category_neutral'] || 0),
+          },
+        });
+      })
+      .catch((err) => console.error('Failed to load sentiment summary:', err));
   }, []);
 
   // Create sentiment comparison data
@@ -134,15 +160,15 @@ const SentimentAnalysis = () => {
             flexWrap: 'wrap',
           }}
         >
-          {/* Pie: Text Sentiment */}
+                    {/* Pie: Text Sentiment */}
           <div style={{ textAlign: 'center' }}>
             <h4 style={{ marginBottom: '1rem' }}>Text-Based Sentiment</h4>
             <PieChart width={260} height={260}>
               <Pie
                 data={[
-                  { name: 'Positive', value: sentimentCounts.positive },
-                  { name: 'Negative', value: sentimentCounts.negative },
-                  { name: 'Neutral', value: sentimentCounts.neutral },
+                  { name: 'Positive', value: summaryData.sentiment.positive },
+                  { name: 'Negative', value: summaryData.sentiment.negative },
+                  { name: 'Neutral', value: summaryData.sentiment.neutral },
                 ]}
                 dataKey="value"
                 outerRadius={80}
@@ -161,9 +187,9 @@ const SentimentAnalysis = () => {
             <PieChart width={260} height={260}>
               <Pie
                 data={[
-                  { name: 'Positive', value: ratingCounts.positive },
-                  { name: 'Negative', value: ratingCounts.negative },
-                  { name: 'Neutral', value: ratingCounts.neutral },
+                  { name: 'Positive', value: summaryData.rating.positive },
+                  { name: 'Negative', value: summaryData.rating.negative },
+                  { name: 'Neutral', value: summaryData.rating.neutral },
                 ]}
                 dataKey="value"
                 outerRadius={80}
@@ -175,7 +201,7 @@ const SentimentAnalysis = () => {
               <Tooltip />
             </PieChart>
           </div>
-        </div>
+      </div>
       </div>
 
       {/* Word Clouds side by side */}

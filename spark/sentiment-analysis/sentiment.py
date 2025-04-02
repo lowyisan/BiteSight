@@ -7,20 +7,21 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 import json
 import os
-
+input_path = "hdfs:///input/dataset/small-raw-r-00000"
 def main(spark):
+    # Download stopwords if not already present
     nltk.download('stopwords')
+    # Load the TSV file (header=False because there are no headers)
+    df = spark.read.csv(input_path, sep='\t', header=False, inferSchema=True)
+    
+    # Manually assign column names
+    df = df.toDF("business_id", "name", "address", "city", "state", "postal", "lat", "lon", "categories", "opening_hours", "review_star", "review_text", "datetime")
 
-    # Load TSV from HDFS
-    df = spark.read.csv("hdfs:///input/dataset/small-r-00000", sep='\t', header=False, inferSchema=True)
-
-    df = df.toDF("business_id", "name", "address", "city", "state", "postal", "lat", "lon", "categories", "opening_hours", "stars", "review_text", "datetime")
-
-    # Tokenize text
+    # Tokenize the review text
     tokenizer = RegexTokenizer(inputCol="review_text", outputCol="words", pattern="\\W+")
     df = tokenizer.transform(df)
 
-    # Initialize VADER
+    # Sentiment analysis setup
     sia = SentimentIntensityAnalyzer()
 
     def get_sentiment(text):
@@ -32,7 +33,7 @@ def main(spark):
     sentiment_udf = udf(get_sentiment, StringType())
     df = df.withColumn("sentiment", sentiment_udf(col("review_text")))
 
-    # Rating category
+    # Convert star ratings into categories
     def rate_category(stars):
         if stars is None:
             return "unknown"
@@ -44,15 +45,14 @@ def main(spark):
             return "negative"
 
     rate_category_udf = udf(rate_category, StringType())
-    df = df.withColumn("rating_category", rate_category_udf(col("stars")))
+    df = df.withColumn("rating_category", rate_category_udf(col("review_star")))
 
-    # Filter reviews
+    # Filter and cache positive/negative reviews
     positive_reviews = df.filter(df.sentiment == "positive").cache().repartition(10)
     negative_reviews = df.filter(df.sentiment == "negative").cache().repartition(10)
 
-    # Stopwords
+    # Stop words and domain words
     stop_words = set(stopwords.words('english'))
-
     restaurant_related_words = set([
         "food", "restaurant", "service", "staff", "menu", "drink", "meal", "dish", "chef", 
         "waiter", "waitress", "ambiance", "dining", "delicious", "taste", "flavor", "appetizer",
@@ -72,6 +72,7 @@ def main(spark):
             word_count[word] = word_count.get(word, 0) + 1
         return word_count
 
+    # Sample and process word frequencies
     positive_words = positive_reviews.select("words").rdd.flatMap(lambda x: x[0]).take(50000)
     negative_words = negative_reviews.select("words").rdd.flatMap(lambda x: x[0]).take(50000)
 
@@ -94,22 +95,36 @@ def main(spark):
     top_50_positive = [{"word": word, "count": count} for word, count in sorted(positive_word_count.items(), key=lambda x: x[1], reverse=True)[:50]]
     top_50_negative = [{"word": word, "count": count} for word, count in sorted(negative_word_count.items(), key=lambda x: x[1], reverse=True)[:50]]
 
-    sentiment_vs_star = df.select("sentiment", "rating_category").limit(50000).toPandas()
-
     # Output paths
-    local_output_folder = "./output/sentiment-analysis/data"
-    os.makedirs(local_output_folder, exist_ok=True)
+    output_folder = "hdfs:///output/analysis/sentiment"
+    os.makedirs(output_folder, exist_ok=True)
 
-    with open(os.path.join(local_output_folder, "word_frequencies.json"), 'w') as f:
+    with open(os.path.join(output_folder, "word_frequencies.json"), 'w') as f:
         json.dump(wordcloud_data, f)
-    with open(os.path.join(local_output_folder, "positive_wordcloud.json"), 'w') as f:
+
+    with open(os.path.join(output_folder, "positive_wordcloud.json"), 'w') as f:
         json.dump(top_50_positive, f)
-    with open(os.path.join(local_output_folder, "negative_wordcloud.json"), 'w') as f:
+
+    with open(os.path.join(output_folder, "negative_wordcloud.json"), 'w') as f:
         json.dump(top_50_negative, f)
 
-    sentiment_vs_star.to_csv(os.path.join(local_output_folder, "sentiment.csv"), index=False)
+    # Sentiment + Rating summary
+    sentiment_counts = df.groupBy("sentiment").count().toPandas().set_index("sentiment")["count"].to_dict()
+    rating_counts = df.groupBy("rating_category").count().toPandas().set_index("rating_category")["count"].to_dict()
 
-    print("Sentiment analysis completed and results saved.")
+    combined_counts = {}
+    for key, val in sentiment_counts.items():
+        combined_counts[f"sentiment_{key}"] = str(val)
+    for key, val in rating_counts.items():
+        combined_counts[f"rating_category_{key}"] = str(val)
 
+    with open(os.path.join(output_folder, "sentiment_rating_summary.json"), 'w') as f:
+        json.dump([combined_counts], f, indent=2)
+
+    print(f" Word frequencies saved to '{output_folder}/word_frequencies.json'")
+    print(f" Top 50 positive/negative words saved.")
+    print(f" Sentiment + rating summary saved to '{output_folder}/sentiment_rating_summary.json'")
+
+# Allow running this directly
 if __name__ == "__main__":
-    main()
+   main()

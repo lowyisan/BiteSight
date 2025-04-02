@@ -1,0 +1,10 @@
+[
+  {
+    "sentiment_positive": "42060",
+    "sentiment_neutral": "812",
+    "sentiment_negative": "7128",
+    "rating_category_positive": "34589",
+    "rating_category_neutral": "4617",
+    "rating_category_negative": "10794"
+  }
+]
