@@ -93,15 +93,10 @@ def main():
         .appName("YelpSummaryKPIsExport")
         .getOrCreate()
     )
+    input_file = "../dataset/small-raw-r-00000"
+    output_directory = "output"
     
-    try:
-        input_file = "../dataset/small-raw-r-00000"
-        output_directory = "output"
-        
-        calculate_summary_kpis(spark, input_file, output_directory)
-    
-    finally:
-        spark.stop()
+    calculate_summary_kpis(spark, input_file, output_directory)
 
 if __name__ == "__main__":
     main()

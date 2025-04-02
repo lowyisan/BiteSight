@@ -266,26 +266,21 @@ def analyze_spikes_dips_topic_modeling(spark, df, flagged_df, output_dir):
 
 def main(input_path, output_dir):
     spark = prepare_spark_session()
-    try:
-        # Load and preprocess data
-        reviews_df = load_and_preprocess_data(spark, input_path)
-        
-        # Compute monthly trends
-        monthly_base = compute_monthly_trends(reviews_df)
-        
-        # Detect spikes and dips
-        flagged_df = detect_spikes_and_dips(monthly_base, threshold=1.0)
-        
-        # Run topic modeling for flagged months and export results
-        analyze_spikes_dips_topic_modeling(spark, reviews_df, flagged_df, output_dir)
-        
-        # Also run and export business trends (monthly and quarterly)
-        analyze_business_trends(reviews_df, output_dir)
+    # Load and preprocess data
+    reviews_df = load_and_preprocess_data(spark, input_path)
     
-    except Exception as e:
-        traceback.print_exc()
-    finally:
-        spark.stop()
+    # Compute monthly trends
+    monthly_base = compute_monthly_trends(reviews_df)
+    
+    # Detect spikes and dips
+    flagged_df = detect_spikes_and_dips(monthly_base, threshold=1.0)
+    
+    # Run topic modeling for flagged months and export results
+    analyze_spikes_dips_topic_modeling(spark, reviews_df, flagged_df, output_dir)
+    
+    # Also run and export business trends (monthly and quarterly)
+    analyze_business_trends(reviews_df, output_dir)
+
 
 if __name__ == "__main__":
     main("../dataset/small-raw-r-00000", "output")
