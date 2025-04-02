@@ -110,3 +110,6 @@ def main(spark):
     sentiment_vs_star.to_csv(os.path.join(local_output_folder, "sentiment.csv"), index=False)
 
     print("Sentiment analysis completed and results saved.")
+
+if __name__ == "__main__":
+    main()
