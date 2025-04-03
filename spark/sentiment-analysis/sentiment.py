@@ -1,4 +1,4 @@
-# Contributor(s): Jeremy Lim Jie En
+# Contributor(s): Jeremy Lim Min En
 
 import nltk
 nltk.download('vader_lexicon')
