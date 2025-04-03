@@ -2,8 +2,6 @@
 
 **BiteSight** is a data analytics pipeline that leverages Hadoop MapReduce and Apache Spark (PySpark) to uncover insights from Yelp's food business reviews across the U.S. It provides sentiment analysis, trend detection, category-based hotspots, and personalized recommendations—all visualized via an interactive dashboard.
 
-![BiteSight Banner](link-to-your-banner-if-any)
-
 ## 🔍 Project Overview
 
 Yelp contains millions of reviews that are often overwhelming for users to interpret and difficult for businesses to analyze. **BiteSight** solves this by:
